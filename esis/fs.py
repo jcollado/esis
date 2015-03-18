@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Filesystem functionality."""
 import logging
 import os

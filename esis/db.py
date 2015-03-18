@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Database related tools."""
 import logging
 
