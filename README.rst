@@ -11,7 +11,7 @@ esis
 
 Elastic Search Index & Search
 
-* Free software: BSD license
+* Free software: MIT license
 * Documentation: https://esis.readthedocs.org.
 
 Features
