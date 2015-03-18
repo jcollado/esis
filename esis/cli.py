@@ -5,6 +5,8 @@ import argparse
 import logging
 import os
 
+from esis.fs import TreeExplorer
+
 logger = logging.getLogger(__name__)
 
 def main():
@@ -16,6 +18,9 @@ def main():
 def index(args):
     """Index database information into elasticsearch."""
     logger.debug('Indexing %r...', args.directory)
+    tree_explorer = TreeExplorer(args.directory)
+    for path in tree_explorer.paths():
+        pass
 
 def search(args):
     """Send query to elasticsearch."""
