@@ -40,6 +40,11 @@ setup(
     license="MIT",
     zip_safe=False,
     keywords='elastic search index sqlite',
+    entry_points={
+        'console_scripts': [
+            'esis = esis.cli:main',
+        ]
+    },
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Intended Audience :: Developers',
