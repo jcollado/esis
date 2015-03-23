@@ -30,6 +30,8 @@ from sqlalchemy.types import (
     TypeDecorator,
 )
 
+from esis.util import datetime_to_timestamp
+
 logger = logging.getLogger(__name__)
 
 
