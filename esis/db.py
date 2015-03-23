@@ -140,6 +140,9 @@ class DBReader(object):
         all_table_names = set(row[0] for row in result.fetchall())
 
         ignored_table_names = ['sqlite_master']
+        sequence_table_name = 'sqlite_sequence'
+        if sequence_table_name in all_table_names:
+            ignored_table_names.append(sequence_table_name)
         fts_table_names = self._get_fts_table_names(all_table_names)
         ignored_table_names.extend(fts_table_names)
         logger.debug(
