@@ -213,7 +213,7 @@ class DBReader(object):
                 '(%d/%d) Traversing %r...',
                 index + 1, len(self.db_tables), table.name)
 
-            yield table
+            yield table.name
 
 
 class IntegerDecorator(TypeDecorator):
