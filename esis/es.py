@@ -82,7 +82,8 @@ class Client(object):
 
         tree_explorer = TreeExplorer(directory)
         for db_path in tree_explorer.paths():
-            index_name = get_index_name(db_path)
+            # Workaround Elasticsearch index name limitations
+            index_name = hashlib.md5(db_path).hexdigest()
             self._recreate_index(index_name)
             with Database(db_path) as database:
                 documents_indexed += self._index_database(index_name, database)
@@ -144,8 +145,8 @@ class Client(object):
         """
         documents_indexed = 0
 
-        # TODO: Transform table name to avoid names not allowed in elasticsearch
-        document_type = table_name
+        # Workaround Elasticsearch document type limitations
+        document_type = hashlib.md5(table_name).hexdigest()
 
         # Translate database schema into an elasticsearch mapping
         table_schema = table_reader.get_schema()
@@ -307,21 +308,6 @@ class Mapping(object):
 
         column_mapping = {'type': column_es_type}
         return column_mapping
-
-def get_index_name(path):
-    """Get index name for a database file.
-
-    :param path: Path to file to be indexed
-    :type path: str
-    :return: Index name for the DB file
-    :rtype: str
-
-    """
-    # There's a limit in elasticsearch index name length and there are some
-    # characters that are not allowed. Using an md5 hash seems to be a
-    # reasonable way to get to a unique index name for each database file.
-    index_name = hashlib.md5(path).hexdigest()
-    return index_name
 
 def get_index_action(index_name, document_type, row):
     """Generate index action for a given database row.
