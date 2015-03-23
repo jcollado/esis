@@ -214,6 +214,15 @@ class Client(object):
 
                 yield hits
 
+    def count(self):
+        """Return indexed documents information.
+
+        :returns: Indexed documents information
+        :rtype: dict
+
+        """
+        return self.es_client.count()
+
 
 class Mapping(object):
 

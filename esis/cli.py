@@ -5,7 +5,10 @@ import argparse
 import logging
 import os
 
-from pprint import pformat
+from pprint import (
+    pformat,
+    pprint,
+)
 
 from esis.es import Client
 
@@ -28,6 +31,11 @@ def search(args):
     for hits in client.search(args.query):
         for hit in hits:
             logger.info(pformat(hit))
+
+def count(_args):
+    """Print indexed documents information."""
+    client = Client()
+    pprint(client.count())
 
 def valid_directory(path):
     """Directory validation."""
@@ -91,6 +99,9 @@ def parse_arguments():
     search_parser = subparsers.add_parser('search', help='Search indexed data')
     search_parser.add_argument('query', help='Search query')
     search_parser.set_defaults(func=search)
+
+    count_parser = subparsers.add_parser('count', help='Indexed documents information')
+    count_parser.set_defaults(func=count)
 
     args = parser.parse_args()
     args.log_level = getattr(logging, args.log_level.upper())
