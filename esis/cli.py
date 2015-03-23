@@ -5,12 +5,7 @@ import argparse
 import logging
 import os
 
-from esis.db import (
-    DBReader,
-    Database,
-    TableReader,
-)
-from esis.fs import TreeExplorer
+from esis.es import Client
 
 logger = logging.getLogger(__name__)
 
@@ -22,16 +17,8 @@ def main():
 
 def index(args):
     """Index database information into elasticsearch."""
-    logger.debug('Indexing %r...', args.directory)
-    tree_explorer = TreeExplorer(args.directory)
-    for path in tree_explorer.paths():
-        with Database(path) as database:
-            db_reader = DBReader(database)
-            for table in db_reader.tables():
-                table_reader = TableReader(database, table)
-                for row in table_reader.rows():
-                    logger.debug(row)
-
+    client = Client()
+    client.index(args.directory)
 
 def search(args):
     """Send query to elasticsearch."""
