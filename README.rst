@@ -9,7 +9,7 @@ esis
         :target: https://pypi.python.org/pypi/esis
 
 
-Elastic Search Index & Search
+Elasticsearch Index & Search
 
 * Free software: MIT license
 * Documentation: https://esis.readthedocs.org.
@@ -17,7 +17,7 @@ Elastic Search Index & Search
 Features
 --------
 
-* Index content for every SQLite database row in elasticsearch
+* Index content for every SQLite database row in Elasticsearch
 * Search indexed content
 
 Usage
