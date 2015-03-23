@@ -5,6 +5,8 @@ import argparse
 import logging
 import os
 
+from pprint import pformat
+
 from esis.es import Client
 
 logger = logging.getLogger(__name__)
@@ -22,7 +24,10 @@ def index(args):
 
 def search(args):
     """Send query to elasticsearch."""
-    logger.debug('Searching %r...', args.query)
+    client = Client()
+    for hits in client.search(args.query):
+        for hit in hits:
+            logger.info(pformat(hit))
 
 def valid_directory(path):
     """Directory validation."""
