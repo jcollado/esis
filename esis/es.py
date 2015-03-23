@@ -223,6 +223,10 @@ class Client(object):
         """
         return self.es_client.count()
 
+    def clean(self):
+        """Remove all indexed documents."""
+        self.es_client.indices.delete(index='_all')
+
 
 class Mapping(object):
 

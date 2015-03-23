@@ -41,6 +41,11 @@ def count(_args):
     client = Client()
     pprint(client.count())
 
+def clean(_args):
+    """Remove all indexed documents."""
+    client = Client()
+    client.clean()
+
 def valid_directory(path):
     """Directory validation."""
     if not os.path.isdir(path):
@@ -106,6 +111,9 @@ def parse_arguments():
 
     count_parser = subparsers.add_parser('count', help='Indexed documents information')
     count_parser.set_defaults(func=count)
+
+    clean_parser = subparsers.add_parser('clean', help='Remove all indexed documents')
+    clean_parser.set_defaults(func=clean)
 
     args = parser.parse_args()
     args.log_level = getattr(logging, args.log_level.upper())
