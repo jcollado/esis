@@ -14,7 +14,6 @@ class MappingTest(unittest.TestCase):
 
     def test_mapping_types(self):
         """Test mapping from sql to Elasticsearch index types."""
-        table_name = 'my_table'
         table_schema = {
             'my_bigint': sql_types.BIGINT(),
             'my_boolean': sql_types.BOOLEAN(),
@@ -42,6 +41,20 @@ class MappingTest(unittest.TestCase):
             {
                 document_type: {
                     'properties': {
+                        '_metadata': {
+                            'type': 'object',
+                            'index': 'no',
+                            'properties': {
+                                'filename': {
+                                    'type': 'string',
+                                    'index': 'no',
+                                },
+                                'table': {
+                                    'type': 'string',
+                                    'index': 'no',
+                                },
+                            },
+                        },
                         'my_bigint': {'type': 'long'},
                         'my_boolean': {'type': 'boolean'},
                         'my_char': {'type': 'string'},
