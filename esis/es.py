@@ -10,7 +10,6 @@ from urlparse import urlparse
 import elasticsearch.helpers
 
 from elasticsearch import Elasticsearch
-from elasticsearch.exceptions import RequestError
 
 from sqlalchemy.types import (
     BIGINT,
@@ -348,4 +347,3 @@ def get_index_action(index_name, document_type, row):
         action['_id'] = source['_id']
 
     return action
-
