@@ -155,9 +155,15 @@ class Client(object):
             doc_type=document_type,
             body=table_mapping.mapping)
 
-        actions = (
-            get_index_action(index_name, document_type, row)
+        db_filename = table_reader.database.db_filename
+        documents = [
+            get_document(db_filename, table_name, row)
             for row in table_reader.rows()
+        ]
+
+        actions = (
+            get_index_action(index_name, document_type, document)
+            for document in documents
         )
         documents_indexed, errors = elasticsearch.helpers.bulk(
             self.es_client, actions)
@@ -271,7 +277,24 @@ class Mapping(object):
 
     def __init__(self, document_type, table_schema):
         """Map every column type to an elasticsearch mapping."""
-        columns_mapping = {}
+        # Database filename and table will be added to a metadata field
+        columns_mapping = {
+            '_metadata': {
+                'type': 'object',
+                'index': 'no',
+                'properties': {
+                    'filename': {
+                        'type': 'string',
+                        'index': 'no',
+                    },
+                    'table': {
+                        'type': 'string',
+                        'index': 'no',
+                    },
+                }
+            }
+        }
+        assert '_metadata' not in table_schema
 
         for column_name, column_sql_type in table_schema.iteritems():
             column_mapping = self._get_column_mapping(column_sql_type)
@@ -305,27 +328,33 @@ class Mapping(object):
         column_mapping = {'type': column_es_type}
         return column_mapping
 
-def get_index_action(index_name, document_type, row):
-    """Generate index action for a given database row.
+def get_document(db_filename, table_name, row):
+    """Get document to be indexed from row.
 
-    :param index_name: Elasticsearch index to use
-    :type index_name: str
-    :param document_type: Elasticsearch document type to use
-    :type index_name: str
-    :param row: The row to be indexed in elasticsearch
+    :param db_filename: Path to the database file
+    :type db_filename: str
+    :param table_name: Database table  name
+    :param row: Database row
     :type row: sqlalchemy.engine.result.RowProxy
-    :return: Action to be passed in bulk request
-    :rtype: dict
 
     """
-    source = dict(row)
+    # Convert row to dictionary
+    document = dict(row)
+
+    # Add metadata to the document
+    document.update(
+        _metadata={
+            'filename': db_filename,
+            'table': table_name,
+        }
+    )
 
     # Avoid indexing binary data
-    for field_name, field_data in source.items():
+    for field_name, field_data in document.items():
         # Avoid indexing binary data
         if isinstance(field_data, buffer):
             logger.debug('%r field discarded before indexing', field_name)
-            del source[field_name]
+            del document[field_name]
 
         # Avoid indexing local paths
         elif isinstance(field_data, basestring):
@@ -334,16 +363,30 @@ def get_index_action(index_name, document_type, row):
                     and os.path.exists(url.path)):
                 logger.debug(
                     '%r field discarded before indexing', field_name)
-                del source[field_name]
+                del document[field_name]
+    return document
 
+def get_index_action(index_name, document_type, document):
+    """Generate index action for a given document.
+
+    :param index_name: Elasticsearch index to use
+    :type index_name: str
+    :param document_type: Elasticsearch document type to use
+    :type index_name: str
+    :param document: Document to be indexed
+    :type row: dict
+    :return: Action to be passed in bulk request
+    :rtype: dict
+
+    """
     action = {
         '_index': index_name,
         '_type': document_type,
-        '_source': source,
+        '_source': document,
     }
 
     # Use the same _id field in elasticsearch as in the database table
-    if '_id' in source:
-        action['_id'] = source['_id']
+    if '_id' in document:
+        action['_id'] = document['_id']
 
     return action
