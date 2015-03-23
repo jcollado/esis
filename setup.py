@@ -18,6 +18,7 @@ requirements = [
     'SQLAlchemy',
     'python-dateutil',
     'python-magic',
+    'elasticsearch',
 ]
 
 test_requirements = [
