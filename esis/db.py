@@ -372,10 +372,10 @@ class TableReader(TypeCoercionMixin):
 
     """
 
-    def __init__(self, database, table):
+    def __init__(self, database, table_name):
         """Initialize reader object."""
         self.database = database
-        self.table = table
+        self.table = database[table_name]
 
         # Filter out columns that are not going to be indexed
         # - BLOB: more investigation needed on how that works with
@@ -390,10 +390,10 @@ class TableReader(TypeCoercionMixin):
         # This is because '_id' is used by elasticsearch and using the same
         # one in multiple documents will result in those being overwritten
         if '_id' in (column.name for column in self.table.columns):
-            query = select([table.c['_id']]).count()
+            query = select([self.table.c['_id']]).count()
             row_count = self.database.connection.execute(query).scalar()
             distinct_query = (
-                select([table.c['_id']]).distinct().count())
+                select([self.table.c['_id']]).distinct().count())
             distinct_row_count = (
                 self.database.connection.execute(distinct_query).scalar())
             if row_count != distinct_row_count:
