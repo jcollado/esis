@@ -35,11 +35,12 @@ class MappingTest(unittest.TestCase):
             'my_timestamp': sql_types.TIMESTAMP(),
             'my_varchar': sql_types.VARCHAR(16),
         }
-        mapping = Mapping(table_name, table_schema)
+        document_type = 'some_document_type'
+        mapping = Mapping(document_type, table_schema)
         self.assertDictEqual(
             mapping.mapping,
             {
-                table_name: {
+                document_type: {
                     'properties': {
                         'my_bigint': {'type': 'long'},
                         'my_boolean': {'type': 'boolean'},

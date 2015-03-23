@@ -150,14 +150,11 @@ class Client(object):
 
         # Translate database schema into an elasticsearch mapping
         table_schema = table_reader.get_schema()
-        table_mapping = Mapping(table_name, table_schema)
-        try:
-            self.es_client.indices.put_mapping(
-                index=index_name,
-                doc_type=document_type,
-                body=table_mapping.mapping)
-        except RequestError as exception:
-            logger.error(exception)
+        table_mapping = Mapping(document_type, table_schema)
+        self.es_client.indices.put_mapping(
+            index=index_name,
+            doc_type=document_type,
+            body=table_mapping.mapping)
 
         actions = (
             get_index_action(index_name, document_type, row)
@@ -233,8 +230,8 @@ class Mapping(object):
 
     """ElasticSearch mapping.
 
-    :param table_name: Database table name
-    :type table_name: str
+    :param document_type: Document type user for the database table
+    :type document_type: str
     :param table_schema: Database table schema from sqlalchemy
     :type table_schema: dict(str, sqlalchemy.types.*)
 
@@ -273,7 +270,7 @@ class Mapping(object):
         VARCHAR: 'string',
     }
 
-    def __init__(self, table_name, table_schema):
+    def __init__(self, document_type, table_schema):
         """Map every column type to an elasticsearch mapping."""
         columns_mapping = {}
 
@@ -288,7 +285,7 @@ class Mapping(object):
             columns_mapping[column_name] = column_mapping
 
         self.mapping = {
-            table_name: {
+            document_type: {
                 'properties': columns_mapping,
             }
         }
