@@ -17,4 +17,13 @@ Elastic Search Index & Search
 Features
 --------
 
-* TODO
+* Index content for every SQLite database row in elasticsearch
+* Search indexed content
+
+Usage
+-----
+
+.. code-block:: bash
+
+    esis index <directory>
+    esis search <query>
