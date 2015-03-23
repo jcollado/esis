@@ -179,6 +179,7 @@ class Client(object):
         :rtype: list(dict)
 
         """
+        logger.debug('Searching %r...', query)
         body = {
             'query': {
                 'match': {
