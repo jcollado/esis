@@ -5,7 +5,11 @@ import argparse
 import logging
 import os
 
-from esis.db import DBReader, TableReader
+from esis.db import (
+    DBReader,
+    Database,
+    TableReader,
+)
 from esis.fs import TreeExplorer
 
 logger = logging.getLogger(__name__)
