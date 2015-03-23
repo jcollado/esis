@@ -27,7 +27,27 @@ Features
 Usage
 -----
 
+* Index every SQLite database row under a given directory (recursively)
+
 .. code-block:: bash
 
     esis index <directory>
+
+
+* Search for a given string in the indexed data
+
+.. code-block:: bash
+
     esis search <query>
+
+* Get information about the number of indexed documents
+
+.. code-block:: bash
+
+    esis count
+
+* Delete all indexed documents
+
+.. code-block:: bash
+
+    esis clean
