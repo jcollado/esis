@@ -2,6 +2,7 @@
 """Elastic Search Index & Search."""
 
 import argparse
+import itertools
 import logging
 import os
 
@@ -28,9 +29,13 @@ def index(args):
 def search(args):
     """Send query to elasticsearch."""
     client = Client()
+    hit_counter = 0
     for hits in client.search(args.query):
         for hit in hits:
-            logger.info(pformat(hit))
+            hit_counter += 1
+            print('{}: {}\n'.format(hit_counter, pformat(hit)))
+
+    print('{} results found'.format(hit_counter))
 
 def count(_args):
     """Print indexed documents information."""
