@@ -54,6 +54,10 @@ def configure_logging(log_level):
     log_handler.setLevel(log_level)
     root_logger.addHandler(log_handler)
 
+    # Disable elasticsearch extra verbose logging
+    logging.getLogger('elasticsearch').setLevel(logging.WARNING)
+    logging.getLogger('urllib3').setLevel(logging.INFO)
+
 
 def parse_arguments():
     """Parse command line arguments.
