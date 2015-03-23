@@ -85,7 +85,7 @@ class Client(object):
             index_name = get_index_name(db_path)
             self._recreate_index(index_name)
             with Database(db_path) as database:
-                documents_indexed = self._index_database(index_name, database)
+                documents_indexed += self._index_database(index_name, database)
 
         return documents_indexed
 
