@@ -25,10 +25,12 @@ def index(args):
     logger.debug('Indexing %r...', args.directory)
     tree_explorer = TreeExplorer(args.directory)
     for path in tree_explorer.paths():
-        db_reader = DBReader(path)
-        for table in db_reader.tables():
-            table_reader = TableReader(db_reader.connection, table)
-            logger.debug(table_reader)
+        with Database(path) as database:
+            db_reader = DBReader(database)
+            for table in db_reader.tables():
+                table_reader = TableReader(database, table)
+                for row in table_reader.rows():
+                    logger.debug(row)
 
 
 def search(args):
