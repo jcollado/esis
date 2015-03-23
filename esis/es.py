@@ -1,5 +1,15 @@
 # -*- coding: utf-8 -*-
 """Elasticsearch related funcionality."""
+import hashlib
+import logging
+import os
+import time
+
+from urlparse import urlparse
+
+import elasticsearch.helpers
+
+from elasticsearch import Elasticsearch
 
 from sqlalchemy.types import (
     BIGINT,
@@ -22,6 +32,183 @@ from sqlalchemy.types import (
     TIMESTAMP,
     VARCHAR,
 )
+
+from esis.fs import TreeExplorer
+from esis.db import (
+    DBReader,
+    Database,
+    TableReader,
+)
+
+
+logger = logging.getLogger(__name__)
+
+class Client(object):
+
+    """Elasticsearch client wrapper."""
+
+    def __init__(self):
+        """Create low level client."""
+        self.es_client = Elasticsearch()
+
+    def index(self, directory):
+        """Index all the information available in a directory.
+
+        In elasticsearch there will be an index for each database and a
+        document type for each table in the database.
+
+        :param directory: Directory that should be indexed
+        :type directory: str
+
+        """
+        logger.debug('Indexing %r...', directory)
+        start = time.time()
+        documents_indexed = self._index_directory(directory)
+        end = time.time()
+        logger.info('%d documents indexed in %.2f seconds',
+                    documents_indexed, end-start)
+
+    def _index_directory(self, directory):
+        """Index all databases under a given directory.
+
+        :param directory: Path to the directory to explore
+        :type directory: str
+        :return: Documents indexed for this directory
+        :rtype: int
+
+        """
+        documents_indexed = 0
+
+        tree_explorer = TreeExplorer(directory)
+        for db_path in tree_explorer.paths():
+            index_name = get_index_name(db_path)
+            self._recreate_index(index_name)
+            with Database(db_path) as database:
+                documents_indexed = self._index_database(index_name, database)
+
+        return documents_indexed
+
+    def _recreate_index(self, index_name):
+        """Recreate elasticsearch index.
+
+        It's checked that the index exists before trying to delete it to avoid
+        failures.
+
+        :param index_name: Elasticsearch index to delete
+        :type index_name: str
+
+        """
+        logger.debug('Recreating index (%s)...', index_name)
+        if self.es_client.indices.exists(index_name):
+            self.es_client.indices.delete(index_name)
+        self.es_client.indices.create(index_name)
+
+    def _index_database(self, index_name, database):
+        """Index all tables in a database file.
+
+        :param index_name: Elasticsearch index name
+        :type index_name: str
+        :param database: Database to be indexed
+        :type database: :class:`esis.db.Database`
+        :return: Documents indexed for this database
+        :rtype: int
+
+        """
+        # Recreate index for the given database
+        documents_indexed = 0
+
+        logger.debug('Populating index (%s)...', index_name)
+        db_reader = DBReader(database)
+
+        # Index the content of every database table
+        for table_name in db_reader.tables():
+            table_reader = TableReader(database, table_name)
+            documents_indexed += self._index_table(
+                index_name, table_name, table_reader)
+
+        return documents_indexed
+
+    def _index_table(self, index_name, table_name, table_reader):
+        """Index all rows in a database table.
+
+        :param index_name: Elasticsearch index to use when indexing documents
+        :type index_name: str
+        :table_name: Table name for which rows are indexed in elasticsearch
+        :type table: str
+        :param table_reader: Object to iterate through all rows in a table
+        :type table_reader: :class:`esis.db.TableReader`
+        :return: Documents indexed for this table
+        :rtype: int
+
+        """
+        documents_indexed = 0
+        document_type = table_name
+
+        # Translate database schema into an elasticsearch mapping
+        table_schema = table_reader.get_schema()
+        table_mapping = Mapping(table_name, table_schema)
+        self.es_client.indices.put_mapping(
+            index=index_name,
+            doc_type=document_type,
+            body=table_mapping.mapping)
+
+        actions = (
+            get_index_action(index_name, document_type, row)
+            for row in table_reader.rows()
+        )
+        documents_indexed, errors = elasticsearch.helpers.bulk(
+            self.es_client, actions)
+
+        if errors:
+            logger.warning('Indexing errors reported: %s', errors)
+
+        return documents_indexed
+
+    def search(self, indices, query):
+        """Yield all documents that match a given query.
+
+        :param indices: Elasticsearch indices to use in the search
+        :type indices: list(str)
+        :param query: A simple query with data to search in elasticsearch
+        :type query: str
+        :return: Records that matched the query as returned by elasticsearch
+        :rtype: list(dict)
+
+        """
+        body = {
+            'query': {
+                'match': {
+                    '_all': query,
+                },
+            },
+        }
+
+        response = self.es_client.search(
+            index=','.join(indices),
+            body=body,
+            scroll='5m',
+            size=100,
+        )
+
+        hits_info = response['hits']
+        hits_total = hits_info['total']
+        logger.info('%d documents matched', hits_total)
+        hits = hits_info['hits']
+        yield hits
+
+        if '_scroll_id' in response:
+            scroll_id = response['_scroll_id']
+
+            while True:
+                response = self.es_client.scroll(
+                    scroll_id=scroll_id,
+                    scroll='5m',
+                )
+                hits = response['hits']['hits']
+                if not hits:
+                    break
+
+                yield hits
 
 
 class Mapping(object):
@@ -103,3 +290,62 @@ class Mapping(object):
 
         column_mapping = {'type': column_es_type}
         return column_mapping
+
+def get_index_name(path):
+    """Get index name for a database file.
+
+    :param path: Path to file to be indexed
+    :type path: str
+    :return: Index name for the DB file
+    :rtype: str
+
+    """
+    # There's a limit in elasticsearch index name length and there are some
+    # characters that are not allowed. Using an md5 hash seems to be a
+    # reasonable way to get to a unique index name for each database file.
+    index_name = hashlib.md5(path).hexdigest()
+    return index_name
+
+def get_index_action(index_name, document_type, row):
+    """Generate index action for a given database row.
+
+    :param index_name: Elasticsearch index to use
+    :type index_name: str
+    :param document_type: Elasticsearch document type to use
+    :type index_name: str
+    :param row: The row to be indexed in elasticsearch
+    :type row: sqlalchemy.engine.result.RowProxy
+    :return: Action to be passed in bulk request
+    :rtype: dict
+
+    """
+    source = dict(row)
+
+    # Avoid indexing binary data
+    for field_name, field_data in source.items():
+        # Avoid indexing binary data
+        if isinstance(field_data, buffer):
+            logger.debug('%r field discarded before indexing', field_name)
+            del source[field_name]
+
+        # Avoid indexing local paths
+        elif isinstance(field_data, basestring):
+            url = urlparse(field_data)
+            if (url.scheme == 'file'
+                    and os.path.exists(url.path)):
+                logger.debug(
+                    '%r field discarded before indexing', field_name)
+                del source[field_name]
+
+    action = {
+        '_index': index_name,
+        '_type': document_type,
+        '_source': source,
+    }
+
+    # Use the same _id field in elasticsearch as in the database table
+    if '_id' in source:
+        action['_id'] = source['_id']
+
+    return action
+
