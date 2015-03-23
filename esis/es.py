@@ -10,6 +10,7 @@ from urlparse import urlparse
 import elasticsearch.helpers
 
 from elasticsearch import Elasticsearch
+from elasticsearch.exceptions import RequestError
 
 from sqlalchemy.types import (
     BIGINT,
@@ -142,15 +143,20 @@ class Client(object):
 
         """
         documents_indexed = 0
+
+        # TODO: Transform table name to avoid names not allowed in elasticsearch
         document_type = table_name
 
         # Translate database schema into an elasticsearch mapping
         table_schema = table_reader.get_schema()
         table_mapping = Mapping(table_name, table_schema)
-        self.es_client.indices.put_mapping(
-            index=index_name,
-            doc_type=document_type,
-            body=table_mapping.mapping)
+        try:
+            self.es_client.indices.put_mapping(
+                index=index_name,
+                doc_type=document_type,
+                body=table_mapping.mapping)
+        except RequestError as exception:
+            logger.error(exception)
 
         actions = (
             get_index_action(index_name, document_type, row)
