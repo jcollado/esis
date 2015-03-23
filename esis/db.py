@@ -111,8 +111,8 @@ class DBReader(object):
 
     """Iterate through all db tables and rows easily.
 
-    :param db_file: Path to the sqlite database file
-    :type db_file: str
+    :param database: Database to traverse
+    :type database: esis.db.Database
 
     """
 
@@ -125,24 +125,16 @@ class DBReader(object):
         'docsize',
     )
 
-    def __init__(self, db_file):
+    def __init__(self, database):
         """Connect to database and get table metadata."""
-        self.engine = create_engine(
-            'sqlite:///{}'.format(db_file),
-            connect_args={'check_same_thread': False},
-        )
+        self.database = database
 
-        logger.debug('Getting table metadata...')
-        self.metadata = MetaData(bind=self.engine)
-        logger.debug('Connecting to SQLite database: %r', db_file)
-        self.connection = self.engine.connect()
-
-        master_table = Table('sqlite_master', self.metadata, autoload=True)
+        master_table = Table('sqlite_master', database.metadata, autoload=True)
         query = (
             select([master_table.c.name])
             .where(master_table.c.type == 'table')
         )
-        result = self.connection.execute(query)
+        result = database.connection.execute(query)
         all_table_names = set(row[0] for row in result.fetchall())
 
         ignored_table_names = ['sqlite_master']
@@ -158,7 +150,7 @@ class DBReader(object):
         self._reflect(table_names)
 
         self.db_tables = [
-            self.metadata.tables[table_name]
+            database.metadata.tables[table_name]
             for table_name in table_names
         ]
         logger.info('%d tables found', len(self.db_tables))
@@ -173,7 +165,7 @@ class DBReader(object):
         :type table_names: list(str)
 
         """
-        inspector = inspect(self.engine)
+        inspector = inspect(self.database.engine)
         for table_name in table_names:
             columns = []
             for column_data in inspector.get_columns(table_name):
@@ -181,7 +173,7 @@ class DBReader(object):
                 column_type = column_data.pop('type', None)
                 column_data['type_'] = column_type
                 columns.append(Column(**column_data))
-            Table(table_name, self.metadata, *columns)
+            Table(table_name, self.database.metadata, *columns)
 
     def _get_fts_table_names(self, all_table_names):
         """Get a list of FTS-related table names.
@@ -190,12 +182,12 @@ class DBReader(object):
         :type all_table_names: set(str)
 
         """
-        master_table = Table('sqlite_master', self.metadata, autoload=True)
+        master_table = Table('sqlite_master', self.database.metadata, autoload=True)
         query = (
             select([master_table.c.name])
             .where(master_table.c.sql.like('%USING fts%'))
         )
-        result = self.connection.execute(query)
+        result = self.database.connection.execute(query)
         fts_table_names = [row[0] for row in result.fetchall()]
 
         shadow_table_names = []
@@ -371,16 +363,16 @@ class TableReader(TypeCoercionMixin):
 
     """Iterate over all rows easily.
 
-    :param connection: Database connection
-    :type session: sqlalchemy.engine.base.Connection
+    :param database: Database being explored
+    :type database: esis.db.Database
     :param table: Database table
     :type table: sqlalchemy.sql.schema.Table
 
     """
 
-    def __init__(self, connection, table):
+    def __init__(self, database, table):
         """Initialize reader object."""
-        self.connection = connection
+        self.database = database
         self.table = table
 
         # Filter out columns that are not going to be indexed
@@ -397,11 +389,11 @@ class TableReader(TypeCoercionMixin):
         # one in multiple documents will result in those being overwritten
         if '_id' in (column.name for column in self.table.columns):
             query = select([table.c['_id']]).count()
-            row_count = self.connection.execute(query).scalar()
+            row_count = self.database.connection.execute(query).scalar()
             distinct_query = (
                 select([table.c['_id']]).distinct().count())
             distinct_row_count = (
-                self.connection.execute(distinct_query).scalar())
+                self.database.connection.execute(distinct_query).scalar())
             if row_count != distinct_row_count:
                 ignored_column_names.append('_id')
 
@@ -441,7 +433,7 @@ class TableReader(TypeCoercionMixin):
         """
         if self.columns:
             query = select(self._coerce(self.columns))
-            result = self.connection.execute(query)
+            result = self.database.connection.execute(query)
             rows = result.fetchall()
             logger.debug('%d rows found', len(rows))
             for row in rows:
