@@ -170,11 +170,9 @@ class Client(object):
 
         return documents_indexed
 
-    def search(self, indices, query):
+    def search(self, query):
         """Yield all documents that match a given query.
 
-        :param indices: Elasticsearch indices to use in the search
-        :type indices: list(str)
         :param query: A simple query with data to search in elasticsearch
         :type query: str
         :return: Records that matched the query as returned by elasticsearch
@@ -190,7 +188,6 @@ class Client(object):
         }
 
         response = self.es_client.search(
-            index=','.join(indices),
             body=body,
             scroll='5m',
             size=100,
