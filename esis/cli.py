@@ -2,7 +2,6 @@
 """Elastic Search Index & Search."""
 
 import argparse
-import itertools
 import logging
 import os
 
