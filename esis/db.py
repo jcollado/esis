@@ -91,6 +91,26 @@ class Database(object):
             table = Table(table_name, self.metadata, autoload=True)
         return table
 
+    def reflect(self, table_names):
+        """Get table metadata through reflection.
+
+        sqlalchemy already provides a reflect method, but it will stop at the
+        first failure, while this method will try to get as much as possible.
+
+        :param table_names: Table names to inspect
+        :type table_names: list(str)
+
+        """
+        inspector = inspect(self.engine)
+        for table_name in table_names:
+            columns = []
+            for column_data in inspector.get_columns(table_name):
+                # Rename 'type' to 'type_' to create column object
+                column_type = column_data.pop('type', None)
+                column_data['type_'] = column_type
+                columns.append(Column(**column_data))
+            Table(table_name, self.metadata, *columns)
+
     def run_quick_check(self):
         """Check database integrity.
 
@@ -152,33 +172,13 @@ class DBReader(object):
 
         ignored_table_names = set(ignored_table_names)
         table_names = all_table_names - ignored_table_names
-        self._reflect(table_names)
+        database.reflect(table_names)
 
         self.db_tables = [
             database.metadata.tables[table_name]
             for table_name in table_names
         ]
         logger.info('%d tables found', len(self.db_tables))
-
-    def _reflect(self, table_names):
-        """Get table metadata through reflection.
-
-        sqlalchemy already provides a reflect method, but it will stop at the
-        first failure, while this method will try to get as much as possible.
-
-        :param table_names: Table names to inspect
-        :type table_names: list(str)
-
-        """
-        inspector = inspect(self.database.engine)
-        for table_name in table_names:
-            columns = []
-            for column_data in inspector.get_columns(table_name):
-                # Rename 'type' to 'type_' to create column object
-                column_type = column_data.pop('type', None)
-                column_data['type_'] = column_type
-                columns.append(Column(**column_data))
-            Table(table_name, self.database.metadata, *columns)
 
     def _get_fts_table_names(self, all_table_names):
         """Get a list of FTS-related table names.
