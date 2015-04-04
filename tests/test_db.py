@@ -49,6 +49,19 @@ class DatabaseTest(unittest.TestCase):
             with self.assertRaises(NoSuchTableError):
                 database['unknown']
 
+    def test_type_error_on_wrong_table_name(self):
+        """TypeError raised when table name is not a string."""
+        with tempfile.NamedTemporaryFile() as db_file:
+            with closing(sqlite3.connect(db_file.name)) as connection:
+                with closing(connection.cursor()) as cursor:
+                    cursor.execute(
+                        'CREATE TABLE messages (id INTEGER, message TEXT)')
+
+            database = Database(db_file.name)
+
+            with self.assertRaises(TypeError):
+                database[0]
+
     def test_run_quick_check_passes(self):
         """Quick check passes for SQLite database."""
         with tempfile.NamedTemporaryFile() as db_file:
