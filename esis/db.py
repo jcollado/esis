@@ -194,7 +194,7 @@ class DBReader(object):
         :type all_table_names: set(str)
 
         """
-        master_table = Table('sqlite_master', self.database.metadata, autoload=True)
+        master_table = self.database['sqlite_master']
         query = (
             select([master_table.c.name])
             .where(master_table.c.sql.like('%USING fts%'))
