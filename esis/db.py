@@ -15,7 +15,10 @@ from sqlalchemy import (
     select,
     type_coerce,
 )
-from sqlalchemy.exc import DatabaseError
+from sqlalchemy.exc import (
+    DatabaseError,
+    NoSuchTableError,
+)
 from sqlalchemy.types import (
     BIGINT,
     BLOB,
@@ -112,6 +115,8 @@ class Database(object):
                 column_type = column_data.pop('type', None)
                 column_data['type_'] = column_type
                 columns.append(Column(**column_data))
+            if not columns:
+                raise NoSuchTableError(table_name)
             Table(table_name, self.metadata, *columns)
 
     def run_quick_check(self):
