@@ -2,15 +2,18 @@
 esis
 ===============================
 
-.. image:: https://img.shields.io/travis/jcollado/esis.svg
-    :target: https://travis-ci.org/jcollado/esis
-
 .. image:: https://img.shields.io/pypi/v/esis.svg
     :target: https://pypi.python.org/pypi/esis
 
 .. image:: https://readthedocs.org/projects/esis/badge/?version=latest
     :target: https://readthedocs.org/projects/esis/?badge=latest
     :alt: Documentation Status
+
+.. image:: https://img.shields.io/travis/jcollado/esis.svg
+    :target: https://travis-ci.org/jcollado/esis
+
+.. image:: https://coveralls.io/repos/jcollado/esis/badge.svg
+   :target: https://coveralls.io/r/jcollado/esis
 
 
 Elasticsearch Index & Search
