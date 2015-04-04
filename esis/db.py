@@ -86,6 +86,8 @@ class Database(object):
         :rtype: sqlalchemy.schema.Table
 
         """
+        if not isinstance(table_name, basestring):
+            raise TypeError('Unexpected table name: {}'.format(table_name))
         table = self.metadata.tables.get(table_name)
         if table is None:
             self.reflect([table_name])
