@@ -88,6 +88,7 @@ class Database(object):
         """
         table = self.metadata.tables.get(table_name)
         if table is None:
+            self.reflect([table_name])
             table = Table(table_name, self.metadata, autoload=True)
         return table
 
@@ -151,7 +152,7 @@ class DBReader(object):
         """Connect to database and get table metadata."""
         self.database = database
 
-        master_table = Table('sqlite_master', database.metadata, autoload=True)
+        master_table = database['sqlite_master']
         query = (
             select([master_table.c.name])
             .where(master_table.c.type == 'table')
@@ -172,10 +173,9 @@ class DBReader(object):
 
         ignored_table_names = set(ignored_table_names)
         table_names = all_table_names - ignored_table_names
-        database.reflect(table_names)
 
         self.db_tables = [
-            database.metadata.tables[table_name]
+            database[table_name]
             for table_name in table_names
         ]
         logger.info('%d tables found', len(self.db_tables))
