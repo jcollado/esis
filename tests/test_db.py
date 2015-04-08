@@ -7,13 +7,17 @@ import unittest
 
 from contextlib import closing
 
+from mock import MagicMock as Mock
 from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.types import (
     INTEGER,
     TEXT,
 )
 
-from esis.db import Database
+from esis.db import (
+    Database,
+    IntegerDecorator,
+)
 
 
 class DatabaseTest(unittest.TestCase):
@@ -94,3 +98,50 @@ class DatabaseTest(unittest.TestCase):
 
         # Connection is closed outside the context
         self.assertTrue(database.connection.closed)
+
+
+class IntegerDecoratorTest(unittest.TestCase):
+
+    """Integer decorator test cases."""
+
+    def setUp(self):
+        """Create integer decorator object."""
+        self.integer_decorator = IntegerDecorator()
+        self.dialect = Mock()
+
+    def test_integer(self):
+        """Integer should be returned as it is."""
+        result = self.integer_decorator.process_result_value(0, self.dialect)
+        self.assertEqual(result, 0)
+
+    def test_string_integer(self):
+        """Integer in string form should be returned as it is."""
+        value = '999999999999999'
+        result = self.integer_decorator.process_result_value(
+            value, self.dialect)
+        self.assertEqual(result, int(value))
+
+    def test_null_string(self):
+        """null string should be converted to None."""
+        result = self.integer_decorator.process_result_value(
+            'null', self.dialect)
+        self.assertIsNone(result)
+
+    def test_date_string(self):
+        """String containing a date is parsed and converted to a timestamp."""
+        result = self.integer_decorator.process_result_value(
+            '2014-09-06T11:27:09.000Z', self.dialect)
+        self.assertEqual(result, 1410002829)
+
+    def test_other_strings(self):
+        """None is returned for other string values."""
+        self.assertIsNone(
+            self.integer_decorator.process_result_value(
+                'other string', self.dialect))
+
+    def test_other_types(self):
+        """None is returned for values of other types."""
+        for invalid_value in ((), []):
+            self.assertIsNone(
+                self.integer_decorator.process_result_value(
+                    invalid_value, self.dialect))
