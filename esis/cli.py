@@ -101,18 +101,22 @@ def parse_arguments():
 
     subparsers = parser.add_subparsers(help='Subcommands')
 
-    index_parser = subparsers.add_parser('index', help='Index SQLite database files')
-    index_parser.add_argument('directory', type=valid_directory, help='Base directory')
+    index_parser = subparsers.add_parser(
+        'index', help='Index SQLite database files')
+    index_parser.add_argument(
+        'directory', type=valid_directory, help='Base directory')
     index_parser.set_defaults(func=index)
 
     search_parser = subparsers.add_parser('search', help='Search indexed data')
     search_parser.add_argument('query', help='Search query')
     search_parser.set_defaults(func=search)
 
-    count_parser = subparsers.add_parser('count', help='Indexed documents information')
+    count_parser = subparsers.add_parser(
+        'count', help='Indexed documents information')
     count_parser.set_defaults(func=count)
 
-    clean_parser = subparsers.add_parser('clean', help='Remove all indexed documents')
+    clean_parser = subparsers.add_parser(
+        'clean', help='Remove all indexed documents')
     clean_parser.set_defaults(func=clean)
 
     args = parser.parse_args()
