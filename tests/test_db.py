@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Test database functionality."""
 
+import os
 import sqlite3
 import tempfile
 import unittest
@@ -27,6 +28,7 @@ from esis.db import (
     Database,
     DatetimeDecorator,
     IntegerDecorator,
+    TableReader,
     TypeCoercionMixin,
 )
 
@@ -261,3 +263,125 @@ class TypeCoercionMixinTest(unittest.TestCase):
                 DatetimeDecorator,
                 DatetimeDecorator,
             ])
+
+
+class TableReaderTest(unittest.TestCase):
+
+    """Table reader test cases."""
+
+    @classmethod
+    def setUpClass(cls):
+        """Create test database.
+
+        Database is reused between test cases because they just read data
+        without chaning the database in any way.
+
+        """
+        with tempfile.NamedTemporaryFile(delete=False) as cls.db_file:
+            with closing(sqlite3.connect(cls.db_file.name)) as connection:
+                with closing(connection.cursor()) as cursor:
+                    cursor.execute(
+                        'CREATE TABLE messages (id INTEGER, message TEXT);')
+
+                    cls.message_values = [
+                        (1, 'one message'),
+                        (2, 'another message'),
+                        (3, 'one more message')]
+                    cursor.executemany(
+                        'INSERT INTO messages VALUES(?, ?);',
+                        cls.message_values)
+
+                    cursor.execute(
+                        'CREATE TABLE calls (_id INTEGER, number TEXT);')
+                    cls.call_values = [
+                        (1, '123456789'),
+                        (2, '234567890'),
+                        (3, '345678901')]
+                    cursor.executemany(
+                        'INSERT INTO calls VALUES(?, ?);',
+                        cls.call_values)
+
+                    cursor.execute(
+                        'CREATE TABLE events (_id INTEGER, description TEXT);')
+                    cls.event_values = [
+                        (1, 'holiday'),
+                        (2, 'meeting'),
+                        (1, 'reminder')]
+                    cursor.executemany(
+                        'INSERT INTO events VALUES(?, ?);',
+                        cls.event_values)
+
+                    cursor.execute(
+                        'CREATE TABLE pictures '
+                        '(id INTEGER, raw_data BLOB);')
+                    cls.picture_values = [
+                        (1, ''),
+                        (2, ''),
+                        (3, '')]
+                    cursor.executemany(
+                        'INSERT INTO pictures VALUES(?, ?);',
+                        cls.picture_values)
+                connection.commit()
+
+            cls.database = Database(cls.db_file.name)
+            cls.database.connect()
+
+    @classmethod
+    def tearDownClass(cls):
+        """Close database connection."""
+        cls.database.disconnect()
+        os.remove(cls.db_file.name)
+
+    def assert_schema(self, table_name, expected_values):
+        """Assert each column type is of the expected type.
+
+        :param table_name: Database table name
+        :type table_name: str
+        :param expected_values: Expected column name and column type
+        :type expected_values: list(tuple(str, sqlalchemy.types.*))
+
+        """
+        table_reader = TableReader(self.database, table_name)
+        schema = table_reader.get_schema()
+        self.assertEqual(len(schema), len(expected_values))
+        for column_name, column_type in expected_values:
+            self.assertEqual(
+                type(schema[column_name]), column_type)
+
+    def test_get_schema(self):
+        """Table schema can be retrieved correctly."""
+        expected_values = [
+            ('id', INTEGER),
+            ('message', TEXT),
+        ]
+        self.assert_schema('messages', expected_values)
+
+    def test_get_schema_with_unique_id(self):
+        """_id column is present when values are unique."""
+        expected_values = [
+            ('_id', INTEGER),
+            ('number', TEXT),
+        ]
+        self.assert_schema('calls', expected_values)
+
+    def test_get_schema_with_non_unique_id(self):
+        """_id column is ignored when values are not unique."""
+        expected_values = [
+            ('description', TEXT),
+        ]
+        self.assert_schema('events', expected_values)
+
+    def test_get_schema_with_blob_columns(self):
+        """blob columns are ignored."""
+        expected_values = [
+            ('id', INTEGER),
+        ]
+        self.assert_schema('pictures', expected_values)
+
+    def test_rows(self):
+        """All table rows are traversed."""
+        table_reader = TableReader(self.database, 'messages')
+
+        self.assertListEqual(
+            list(table_reader.rows()),
+            self.message_values)
