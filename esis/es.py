@@ -361,8 +361,8 @@ def get_document(db_filename, table_name, row):
         # Avoid indexing local paths
         elif isinstance(field_data, basestring):
             url = urlparse(field_data)
-            if (url.scheme == 'file'
-                    and os.path.exists(url.path)):
+            if (url.scheme == 'file' and
+                    os.path.exists(url.path)):
                 logger.debug(
                     '%r field discarded before indexing', field_name)
                 del document[field_name]
