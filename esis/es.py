@@ -67,7 +67,7 @@ class Client(object):
         documents_indexed = self._index_directory(directory)
         end = time.time()
         logger.info('%d documents indexed in %.2f seconds',
-                    documents_indexed, end-start)
+                    documents_indexed, end - start)
 
     def _index_directory(self, directory):
         """Index all databases under a given directory.
