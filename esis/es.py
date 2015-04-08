@@ -43,6 +43,7 @@ from esis.db import (
 
 logger = logging.getLogger(__name__)
 
+
 class Client(object):
 
     """Elasticsearch client wrapper."""
@@ -328,6 +329,7 @@ class Mapping(object):
         column_mapping = {'type': column_es_type}
         return column_mapping
 
+
 def get_document(db_filename, table_name, row):
     """Get document to be indexed from row.
 
@@ -365,6 +367,7 @@ def get_document(db_filename, table_name, row):
                     '%r field discarded before indexing', field_name)
                 del document[field_name]
     return document
+
 
 def get_index_action(index_name, document_type, document):
     """Generate index action for a given document.

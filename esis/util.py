@@ -5,6 +5,7 @@ from datetime import datetime
 
 import dateutil
 
+
 def datetime_to_timestamp(datetime_obj):
     """Return a timestamp for the given datetime object.
 

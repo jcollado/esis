@@ -14,16 +14,19 @@ from esis.es import Client
 
 logger = logging.getLogger(__name__)
 
+
 def main():
     """Entry point for the esis.py script."""
     args = parse_arguments()
     configure_logging(args.log_level)
     args.func(args)
 
+
 def index(args):
     """Index database information into elasticsearch."""
     client = Client()
     client.index(args.directory)
+
 
 def search(args):
     """Send query to elasticsearch."""
@@ -36,15 +39,18 @@ def search(args):
 
     print('{} results found'.format(hit_counter))
 
+
 def count(_args):
     """Print indexed documents information."""
     client = Client()
     pprint(client.count())
 
+
 def clean(_args):
     """Remove all indexed documents."""
     client = Client()
     client.clean()
+
 
 def valid_directory(path):
     """Directory validation."""
@@ -57,6 +63,7 @@ def valid_directory(path):
             'not enough permissions to explore {!r}'.format(path))
 
     return path
+
 
 def configure_logging(log_level):
     """Configure logging based on command line argument.
