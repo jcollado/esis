@@ -6,6 +6,8 @@ import tempfile
 import unittest
 
 from contextlib import closing
+from datetime import datetime
+from time import time
 
 from mock import MagicMock as Mock
 from sqlalchemy.exc import NoSuchTableError
@@ -16,6 +18,7 @@ from sqlalchemy.types import (
 
 from esis.db import (
     Database,
+    DatetimeDecorator,
     IntegerDecorator,
 )
 
@@ -144,4 +147,74 @@ class IntegerDecoratorTest(unittest.TestCase):
         for invalid_value in ((), []):
             self.assertIsNone(
                 self.integer_decorator.process_result_value(
+                    invalid_value, self.dialect))
+
+
+class DatetimeDecoratorTest(unittest.TestCase):
+
+    """Datetime decorator test cases."""
+
+    def setUp(self):
+        """Create integer decorator object."""
+        self.datetime_decorator = DatetimeDecorator()
+        self.dialect = Mock()
+
+    def test_datetime(self):
+        """Datetime object is converted to an ISO string."""
+        now = datetime.now()
+
+        value = self.datetime_decorator.process_result_value(now, self.dialect)
+        self.assertEqual(value, now.isoformat())
+
+    def test_timestamp_seconds(self):
+        """Timestamp in seconds is converted to an ISO string."""
+        timestamp = int(time())
+
+        value = self.datetime_decorator.process_result_value(
+            timestamp, self.dialect)
+        self.assertEqual(
+            value, datetime.utcfromtimestamp(timestamp).isoformat())
+
+    def test_timestamp_milliseconds(self):
+        """Timestamp in milliseconds is converted to an ISO string."""
+        timestamp = int(time()) * 1000
+
+        value = self.datetime_decorator.process_result_value(
+            timestamp, self.dialect)
+        self.assertEqual(
+            value, datetime.utcfromtimestamp(timestamp / 1000).isoformat())
+
+    def test_timestamp_microseconds(self):
+        """Timestamp in microseconds is converted to an ISO string."""
+        timestamp = int(time()) * 1000000
+
+        value = self.datetime_decorator.process_result_value(
+            timestamp, self.dialect)
+        self.assertEqual(
+            value, datetime.utcfromtimestamp(timestamp / 1000000).isoformat())
+    def test_invalid_timestamp(self):
+        """None is returned if timestamp is out of range."""
+        timestamp = 999999999999999999
+        self.assertIsNone(
+            self.datetime_decorator.process_result_value(
+                timestamp, self.dialect))
+
+    def test_string(self):
+        """Datetime string is reformatted as an ISO string if needed."""
+        dt_value = datetime(2014, 1, 1)
+        value = self.datetime_decorator.process_result_value(
+            dt_value.strftime('%Y-%m-%d'), self.dialect)
+        self.assertEqual(value, dt_value.isoformat())
+
+    def test_invalid_string(self):
+        """None is returned if string cannot be parsed."""
+        self.assertIsNone(
+            self.datetime_decorator.process_result_value(
+                'this is not a datetime', self.dialect))
+
+    def test_invalid_type(self):
+        """None is returned if value type cannot be parsed."""
+        for invalid_value in (True, (), []):
+            self.assertIsNone(
+                self.datetime_decorator.process_result_value(
                     invalid_value, self.dialect))
