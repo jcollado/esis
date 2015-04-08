@@ -10,16 +10,24 @@ from datetime import datetime
 from time import time
 
 from mock import MagicMock as Mock
+from sqlalchemy import Column
 from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.types import (
+    BIGINT,
+    BOOLEAN,
+    DATETIME,
     INTEGER,
+    NUMERIC,
+    SMALLINT,
     TEXT,
+    TIMESTAMP,
 )
 
 from esis.db import (
     Database,
     DatetimeDecorator,
     IntegerDecorator,
+    TypeCoercionMixin,
 )
 
 
@@ -218,3 +226,38 @@ class DatetimeDecoratorTest(unittest.TestCase):
             self.assertIsNone(
                 self.datetime_decorator.process_result_value(
                     invalid_value, self.dialect))
+
+
+class TypeCoercionMixinTest(unittest.TestCase):
+
+    """Type coercion mixin test cases."""
+
+    def setUp(self):
+        """Create coercion object from the mixin."""
+        self.coercer = TypeCoercionMixin()
+
+    def test_numeric_coerced_to_text(self):
+        """Numeric columns are coerced to text columns."""
+        columns = self.coercer._coerce([
+            Column('column', NUMERIC()),
+            Column('column', BOOLEAN()),
+            Column('column', INTEGER()),
+            Column('column', BIGINT()),
+            Column('column', SMALLINT()),
+            Column('column', DATETIME()),
+            Column('column', TIMESTAMP()),
+        ])
+
+        column_types = [type(column.type) for column in columns]
+
+        self.assertListEqual(
+            column_types,
+            [
+                TEXT,
+                IntegerDecorator,
+                IntegerDecorator,
+                IntegerDecorator,
+                IntegerDecorator,
+                DatetimeDecorator,
+                DatetimeDecorator,
+            ])
