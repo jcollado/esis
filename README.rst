@@ -9,6 +9,10 @@ esis
     :target: https://readthedocs.org/projects/esis/?badge=latest
     :alt: Documentation Status
 
+.. image:: https://landscape.io/github/jcollado/esis/master/landscape.svg?style=flat
+   :target: https://landscape.io/github/jcollado/esis/master
+   :alt: Code Health
+
 .. image:: https://img.shields.io/travis/jcollado/esis.svg
     :target: https://travis-ci.org/jcollado/esis
 
