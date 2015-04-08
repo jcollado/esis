@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Elastic Search Index & Search."""
+"""Command Line Interface."""
 
 import argparse
 import logging
