@@ -11,7 +11,10 @@ from datetime import datetime
 from time import time
 
 from mock import MagicMock as Mock
-from sqlalchemy import Column
+from sqlalchemy import (
+    Column,
+    select,
+)
 from sqlalchemy.exc import NoSuchTableError
 from sqlalchemy.types import (
     BIGINT,
@@ -25,6 +28,7 @@ from sqlalchemy.types import (
 )
 
 from esis.db import (
+    DBReader,
     Database,
     DatetimeDecorator,
     IntegerDecorator,
@@ -111,6 +115,80 @@ class DatabaseTest(unittest.TestCase):
 
         # Connection is closed outside the context
         self.assertTrue(database.connection.closed)
+
+
+class DBReaderTest(unittest.TestCase):
+
+    """Database reader test cases."""
+
+    def create_tables(self, db_filename, table_names, fts_table_names=None):
+        """Create tables needed for a test case.
+
+        :param db_filename: Path to database file
+        :type db_filename: str
+        :param table_names: Names of the tables to create
+        :type table_names: list(str)
+        :param table_names: Names of the FTS tables to create
+        :type table_names: list(str)
+
+        """
+        with closing(sqlite3.connect(db_filename)) as connection:
+            with closing(connection.cursor()) as cursor:
+                for table_name in table_names:
+                    cursor.execute(
+                        'CREATE TABLE {} (id INTEGER)'
+                        .format(table_name))
+
+                if fts_table_names is not None:
+                    for fts_table_name in fts_table_names:
+                        cursor.execute(
+                            'CREATE VIRTUAL TABLE {} USING fts3(id INTEGER)'
+                            .format(fts_table_name))
+
+    def test_tables(self):
+        """Database tables are correctly retrieved."""
+        expected_table_names = sorted(
+            ['messages', 'calls', 'events', 'pictures'])
+
+        with tempfile.NamedTemporaryFile() as db_file:
+            self.create_tables(db_file.name, expected_table_names)
+            with Database(db_file.name) as database:
+                db_reader = DBReader(database)
+                table_names = sorted(db_reader.tables())
+                self.assertListEqual(table_names, expected_table_names)
+
+    def test_ignore_fts_tables(self):
+        """FTS database tables are ignored."""
+        expected_table_names = ['messages', 'calls', 'events', 'pictures']
+        fts_table_names = [
+            '{}_search'.format(table_name)
+            for table_name in expected_table_names]
+
+        with tempfile.NamedTemporaryFile() as db_file:
+            self.create_tables(
+                db_file.name,
+                expected_table_names,
+                fts_table_names,
+            )
+
+            with Database(db_file.name) as database:
+                db_reader = DBReader(database)
+                table_names = [table_name for table_name in db_reader.tables()]
+
+                # Check ignored tables are indeed in the database
+                master_table = database['sqlite_master']
+                query = (
+                    select([master_table.c.name])
+                    .where(master_table.c.type == 'table')
+                )
+                result = database.connection.execute(query)
+                all_table_names = set(row[0] for row in result.fetchall())
+                for table_name in fts_table_names:
+                    self.assertIn(table_name, all_table_names)
+
+                self.assertListEqual(
+                    sorted(table_names),
+                    sorted(expected_table_names))
 
 
 class IntegerDecoratorTest(unittest.TestCase):
