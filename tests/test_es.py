@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 """Elasticsearch client test cases."""
 
+import tempfile
 import unittest
 
 from sqlalchemy import types as sql_types
 
-from esis.es import Mapping
+from esis.es import (
+    Mapping,
+    get_document,
+    get_index_action,
+)
 
 
 class MappingTest(unittest.TestCase):
@@ -70,6 +75,112 @@ class MappingTest(unittest.TestCase):
                         'my_timestamp': {'type': 'date'},
                         'my_varchar': {'type': 'string'},
                     },
+                },
+            },
+        )
+
+
+class GetDocumentTest(unittest.TestCase):
+
+    """Get document test cases."""
+
+    def test_metadata_added(self):
+        """Metadata is added to the document."""
+        db_filename = 'filename'
+        table_name = 'table'
+        row = {'text': 'some message'}
+        document = get_document(db_filename, table_name, row)
+        self.assertDictEqual(
+            document,
+            {
+                'text': 'some message',
+                '_metadata': {
+                    'filename': db_filename,
+                    'table': table_name,
+                }
+            },
+        )
+
+    def test_binary_data_removed(self):
+        """Binary data removed."""
+        db_filename = 'filename'
+        table_name = 'table'
+        row = {
+            'text': 'some message',
+            'data': buffer('a'),
+        }
+        document = get_document(db_filename, table_name, row)
+        self.assertDictEqual(
+            document,
+            {
+                'text': 'some message',
+                '_metadata': {
+                    'filename': db_filename,
+                    'table': table_name,
+                }
+            },
+        )
+
+    def test_local_path_removed(self):
+        """Local path removed."""
+        with tempfile.NamedTemporaryFile() as db_file:
+            table_name = 'table'
+            row = {
+                'text': 'some message',
+                'path': 'file://{}'.format(db_file.name),
+            }
+            document = get_document(db_file.name, table_name, row)
+            self.assertDictEqual(
+                document,
+                {
+                    'text': 'some message',
+                    '_metadata': {
+                        'filename': db_file.name,
+                        'table': table_name,
+                    }
+                },
+            )
+
+
+class GetIndexActionTest(unittest.TestCase):
+
+    """Get index action test cases."""
+
+    def test_get_index_action(self):
+        """Get index action for a given row."""
+        index_name = 'index'
+        document_type = 'message'
+        document = {'text': 'some message'}
+        action = get_index_action(index_name, document_type, document)
+        self.assertDictEqual(
+            action,
+            {
+                '_index': 'index',
+                '_type': 'message',
+                '_source': {
+                    'text': 'some message',
+                },
+            },
+        )
+
+    def test_get_index_action_row_with_id_field(self):
+        """Get index action for a row with and _id field."""
+        index_name = 'index'
+        document_type = 'message'
+        document = {
+            '_id': 7,
+            'text': 'some message',
+        }
+        action = get_index_action(index_name, document_type, document)
+        self.assertDictEqual(
+            action,
+            {
+                '_id': 7,
+                '_index': 'index',
+                '_type': 'message',
+                '_source': {
+                    '_id': 7,
+                    'text': 'some message',
                 },
             },
         )
