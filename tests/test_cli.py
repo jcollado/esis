@@ -19,6 +19,7 @@ from esis.cli import (
     main,
     parse_arguments,
     search,
+    valid_directory,
 )
 
 class MainTests(unittest.TestCase):
@@ -96,19 +97,49 @@ class CommandFunctionTests(unittest.TestCase):
         self.patcher.stop()
 
 
+class ValidDirectoryTest(unittest.TestCase):
+
+    """Valid directory test cases."""
+
+    def test_valid_directory(self):
+        """Valid directory path."""
+        temp_directory = tempfile.mkdtemp()
+        try:
+            self.assertTrue(
+                valid_directory(temp_directory),
+                temp_directory,
+            )
+        finally:
+            os.rmdir(temp_directory)
+
+    def test_invalid_directory(self):
+        """Invalid directory."""
+        with tempfile.NamedTemporaryFile() as temp_file:
+            with self.assertRaises(argparse.ArgumentTypeError):
+                valid_directory(temp_file.name)
+
+    def test_unreadable_directory(self):
+        """Unreadable diretory."""
+        temp_directory = tempfile.mkdtemp()
+        try:
+            os.chmod(temp_directory, 0)
+            with self.assertRaises(argparse.ArgumentTypeError):
+                valid_directory(temp_directory)
+        finally:
+            os.rmdir(temp_directory)
+
 class ParseArgumentsTest(unittest.TestCase):
 
     """Parse arguments test case."""
 
     def test_index_command(self):
         """Search command."""
-        temp_directory = tempfile.mkdtemp()
-        try:
-            args = parse_arguments(['index', temp_directory])
-            self.assertEqual(args.directory, temp_directory)
+        directory = 'some directory'
+        with patch('esis.cli.valid_directory') as valid_directory:
+            valid_directory.return_value = directory
+            args = parse_arguments(['index', directory])
+            self.assertEqual(args.directory, directory)
             self.assertEqual(args.func, index)
-        finally:
-            os.rmdir(temp_directory)
 
     def test_search_command(self):
         """Search command."""
