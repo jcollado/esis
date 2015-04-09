@@ -2,19 +2,54 @@
 """Command Line Interface test cases."""
 
 import argparse
+import logging
 import os
 import tempfile
 import unittest
 
-from mock import patch
+from mock import (
+    MagicMock as Mock,
+    patch,
+)
 
 from esis.cli import (
     clean,
     count,
     index,
+    main,
     parse_arguments,
     search,
 )
+
+class MainTests(unittest.TestCase):
+
+    """Main function test cases."""
+
+    def setUp(self):
+        """Patch parse_arguments function."""
+        self.parse_arguments_patcher = patch('esis.cli.parse_arguments')
+        self.parse_arguments = self.parse_arguments_patcher.start()
+
+        self.logging_patcher = patch('esis.cli.logging')
+        self.logging_patcher.start()
+
+    def test_func_called(self):
+        """Command function is called."""
+        argv = Mock()
+        function = Mock()
+        args = argparse.Namespace(
+            log_level=logging.WARNING,
+            func=function,
+        )
+        self.parse_arguments.return_value = args
+        main(argv)
+        function.assert_called_once_with(args)
+
+    def tearDown(self):
+        """Undo the patching."""
+        self.parse_arguments_patcher.stop()
+        self.logging_patcher.stop()
+
 
 class CommandFunctionTests(unittest.TestCase):
 
