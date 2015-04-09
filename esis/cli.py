@@ -4,6 +4,7 @@
 import argparse
 import logging
 import os
+import sys
 
 from pprint import (
     pformat,
@@ -15,9 +16,9 @@ from esis.es import Client
 logger = logging.getLogger(__name__)
 
 
-def main():
+def main(argv):
     """Entry point for the esis.py script."""
-    args = parse_arguments()
+    args = parse_arguments(argv)
     configure_logging(args.log_level)
     args.func(args)
 
@@ -88,7 +89,7 @@ def configure_logging(log_level):
     logging.getLogger('urllib3').setLevel(logging.INFO)
 
 
-def parse_arguments():
+def parse_arguments(argv):
     """Parse command line arguments.
 
     :returns: Parsed arguments
@@ -126,9 +127,9 @@ def parse_arguments():
         'clean', help='Remove all indexed documents')
     clean_parser.set_defaults(func=clean)
 
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
     args.log_level = getattr(logging, args.log_level.upper())
     return args
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
