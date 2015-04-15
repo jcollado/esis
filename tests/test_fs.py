@@ -70,6 +70,18 @@ class TreeExplorerTest(unittest.TestCase):
                 cursor.execute('CREATE TABLE messages (id INTEGER)')
         self.sqlite_db_filenames.append(filename)
 
+    def create_broken_symlink_file(self, filename):
+        """Create a broken symlink using the given name.
+
+        :param filename: Path to the file that should be created
+        :type filename: str
+
+        """
+        # Create symlink pointing to a temporary file
+        # that will be removed after exiting from the context manager
+        with tempfile.NamedTemporaryFile() as source_file:
+            os.symlink(source_file.name, filename)
+
     def test_paths(self):
         """SQLite database files are found under the given path."""
         metadata = {
@@ -84,6 +96,21 @@ class TreeExplorerTest(unittest.TestCase):
                 }
             },
         }
+        self.create_directory(self.directory, metadata)
+
+        tree_explorer = TreeExplorer(self.directory)
+        self.assertListEqual(
+            sorted(tree_explorer.paths()),
+            sorted(self.sqlite_db_filenames),
+        )
+
+    def test_broken_symlink(self):
+        """Broken symbolic links are skipped while exploring directory."""
+        metadata = {
+            'a': 'broken_symlink',
+            'b': 'sqlite',
+        }
+
         self.create_directory(self.directory, metadata)
 
         tree_explorer = TreeExplorer(self.directory)
