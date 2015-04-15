@@ -64,7 +64,12 @@ class TreeExplorer(object):
         return valid_paths
 
     def _explore(self):
-        """Walk from base directory and yield files that match pattern."""
+        """Walk from base directory and return files that match pattern.
+
+        :returns: SQLite files found under directory
+        :rtype: list(str)
+
+        """
         db_paths = []
         for (dirpath, dirnames, filenames) in os.walk(self.directory):
             logger.debug('Exploring %s...', dirpath)
