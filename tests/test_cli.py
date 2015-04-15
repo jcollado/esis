@@ -128,12 +128,13 @@ class ValidDirectoryTest(unittest.TestCase):
         finally:
             os.rmdir(temp_directory)
 
+
 class ParseArgumentsTest(unittest.TestCase):
 
     """Parse arguments test case."""
 
     def test_index_command(self):
-        """Search command."""
+        """Index command."""
         directory = 'some directory'
         with patch('esis.cli.valid_directory') as valid_directory:
             valid_directory.return_value = directory
