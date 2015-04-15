@@ -136,8 +136,8 @@ class ParseArgumentsTest(unittest.TestCase):
     def test_index_command(self):
         """Index command."""
         directory = 'some directory'
-        with patch('esis.cli.valid_directory') as valid_directory:
-            valid_directory.return_value = directory
+        with patch('esis.cli.valid_directory') as valid_directory_func:
+            valid_directory_func.return_value = directory
             args = parse_arguments(['index', directory])
             self.assertEqual(args.directory, directory)
             self.assertEqual(args.func, index)
