@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class TreeExplorer(object):
 
-    """Look for sqlite files in a tree an return the valid ones.
+    """Look for sqlite files in a tree and return the valid ones.
 
     :param directory: Base directory for the tree to be explored.
     :type directory: str
@@ -32,7 +32,7 @@ class TreeExplorer(object):
     def paths(self):
         """Return paths to valid databases found under directory.
 
-        :return: Paths to valid datbases
+        :return: Paths to valid databases
         :rtype: list(str)
 
         """
