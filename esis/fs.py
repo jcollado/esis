@@ -94,6 +94,12 @@ class TreeExplorer(object):
             # Check if any filename is a sqlite database
             for filename in filenames:
                 db_path = os.path.join(dirpath, filename)
+
+                # Skip missing files like broken symbolic links
+                if not os.path.isfile(db_path):
+                    logger.warning('Unable to access file: %r', db_path)
+                    continue
+
                 if 'SQLite' in magic.from_file(db_path):
                     db_paths.append(db_path)
 
