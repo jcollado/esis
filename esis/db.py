@@ -42,9 +42,6 @@ class Database(object):
 
     """Generic database object.
 
-    This class is subclassed to provide additional functionality specific to
-    artifacts and/or documents.
-
     :param db_filename: Path to the sqlite database file
     :type db_filename: str
 
