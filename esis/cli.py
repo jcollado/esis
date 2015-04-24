@@ -16,8 +16,10 @@ from esis.es import Client
 logger = logging.getLogger(__name__)
 
 
-def main(argv=sys.argv[1:]):
+def main(argv=None):
     """Entry point for the esis.py script."""
+    if argv is None:
+        argv = sys.argv[1:]
     args = parse_arguments(argv)
     configure_logging(args.log_level)
     args.func(args)
