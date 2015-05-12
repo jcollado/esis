@@ -48,6 +48,8 @@ class Client(object):
 
     """Elasticsearch client wrapper."""
 
+    INDEX_NAME = 'sqlite'
+
     def __init__(self):
         """Create low level client."""
         self.es_client = Elasticsearch()
@@ -80,13 +82,12 @@ class Client(object):
         """
         documents_indexed = 0
 
+        self._recreate_index(self.INDEX_NAME)
+
         tree_explorer = TreeExplorer(directory)
         for db_path in tree_explorer.paths():
-            # Workaround Elasticsearch index name limitations
-            index_name = hashlib.md5(db_path).hexdigest()
-            self._recreate_index(index_name)
             with Database(db_path) as database:
-                documents_indexed += self._index_database(index_name, database)
+                documents_indexed += self._index_database(database)
 
         return documents_indexed
 
@@ -105,11 +106,9 @@ class Client(object):
             self.es_client.indices.delete(index_name)
         self.es_client.indices.create(index_name)
 
-    def _index_database(self, index_name, database):
+    def _index_database(self, database):
         """Index all tables in a database file.
 
-        :param index_name: Elasticsearch index name
-        :type index_name: str
         :param database: Database to be indexed
         :type database: :class:`esis.db.Database`
         :return: Documents indexed for this database
@@ -119,24 +118,19 @@ class Client(object):
         # Recreate index for the given database
         documents_indexed = 0
 
-        logger.debug('Populating index (%s)...', index_name)
+        logger.debug('Populating index (%s)...', self.INDEX_NAME)
         db_reader = DBReader(database)
 
         # Index the content of every database table
         for table_name in db_reader.tables():
             table_reader = TableReader(database, table_name)
-            documents_indexed += self._index_table(
-                index_name, table_name, table_reader)
+            documents_indexed += self._index_table(table_reader)
 
         return documents_indexed
 
-    def _index_table(self, index_name, table_name, table_reader):
+    def _index_table(self, table_reader):
         """Index all rows in a database table.
 
-        :param index_name: Elasticsearch index to use when indexing documents
-        :type index_name: str
-        :table_name: Table name for which rows are indexed in elasticsearch
-        :type table: str
         :param table_reader: Object to iterate through all rows in a table
         :type table_reader: :class:`esis.db.TableReader`
         :return: Documents indexed for this table
@@ -146,13 +140,17 @@ class Client(object):
         documents_indexed = 0
 
         # Workaround Elasticsearch document type limitations
-        document_type = hashlib.md5(table_name).hexdigest()
+        db_path = table_reader.database.db_filename
+        table_name = table_reader.table.name
+        document_type = hashlib.md5(
+            '{}:{}'.format(db_path, table_name)
+        ).hexdigest()
 
         # Translate database schema into an elasticsearch mapping
         table_schema = table_reader.get_schema()
         table_mapping = Mapping(document_type, table_schema)
         self.es_client.indices.put_mapping(
-            index=index_name,
+            index=self.INDEX_NAME,
             doc_type=document_type,
             body=table_mapping.mapping)
 
@@ -163,7 +161,7 @@ class Client(object):
         ]
 
         actions = (
-            get_index_action(index_name, document_type, document)
+            get_index_action(self.INDEX_NAME, document_type, document)
             for document in documents
         )
         documents_indexed, errors = elasticsearch.helpers.bulk(
