@@ -76,7 +76,6 @@ class ClientTest(unittest.TestCase):
     @patch('esis.es.DBReader')
     def test_index_database(self, db_reader_cls):
         """Index a database completely."""
-        index_name = 'abcd-efgh'
         database = Mock()
         db_reader = db_reader_cls()
         db_reader.tables.return_value = ('calls', 'messages', 'pictures')
@@ -84,7 +83,7 @@ class ClientTest(unittest.TestCase):
         self.client._index_table = Mock(
             side_effect=documents_indexed_per_table)
 
-        documents_indexed = self.client._index_database(index_name, database)
+        documents_indexed = self.client._index_database(database)
         db_reader_cls.assert_called_with(database)
         self.assertEqual(documents_indexed, sum(documents_indexed_per_table))
 
@@ -101,15 +100,17 @@ class ClientTest(unittest.TestCase):
         ]
         bulk_mock.return_value = (len(rows), [])
 
-        index_name = 'abcd-efgh'
+        db_path = 'some path'
         table_name = 'calls'
         table_reader = Mock()
         table_reader.rows.return_value = rows
-        documents_indexed = self.client._index_table(
-            index_name, table_name, table_reader)
+        table_reader.database.db_filename = db_path
+        table_reader.table.name = table_name
+        documents_indexed = self.client._index_table(table_reader)
         indices.put_mapping.assert_called_once_with(
-            index=index_name,
-            doc_type=hashlib.md5(table_name).hexdigest(),
+            index=self.client.INDEX_NAME,
+            doc_type=hashlib.md5(
+                '{}:{}'.format(db_path, table_name)).hexdigest(),
             body=mapping.mapping)
         self.assertEqual(documents_indexed, len(rows))
 
@@ -127,15 +128,17 @@ class ClientTest(unittest.TestCase):
         indexed_rows = 1
         bulk_mock.return_value = (indexed_rows, ['some error'])
 
-        index_name = 'abcd-efgh'
+        db_path = 'some path'
         table_name = 'calls'
         table_reader = Mock()
         table_reader.rows.return_value = rows
-        documents_indexed = self.client._index_table(
-            index_name, table_name, table_reader)
+        table_reader.database.db_filename = db_path
+        table_reader.table.name = table_name
+        documents_indexed = self.client._index_table(table_reader)
         indices.put_mapping.assert_called_once_with(
-            index=index_name,
-            doc_type=hashlib.md5(table_name).hexdigest(),
+            index=self.client.INDEX_NAME,
+            doc_type=hashlib.md5(
+                '{}:{}'.format(db_path, table_name)).hexdigest(),
             body=mapping.mapping)
         self.assertEqual(
             documents_indexed,
