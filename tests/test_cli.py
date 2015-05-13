@@ -85,7 +85,8 @@ class CommandFunctionTests(unittest.TestCase):
             ['result_1', 'result_2'],
             ['result_3', 'result_4'],
         ]
-        search(args)
+        with patch('esis.cli.sys.stdout'):
+            search(args)
         self.client.search.assert_called_once_with(query)
 
     def test_count(self):
@@ -94,7 +95,8 @@ class CommandFunctionTests(unittest.TestCase):
             host='localhost',
             port=9200,
         )
-        count(args)
+        with patch('esis.cli.sys.stdout'):
+            count(args)
         self.client.count.assert_called_once_with()
 
     def test_clean(self):

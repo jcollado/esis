@@ -8,6 +8,8 @@ import unittest
 
 from contextlib import closing
 
+from mock import patch
+
 from esis.fs import TreeExplorer
 
 
@@ -114,10 +116,9 @@ class TreeExplorerTest(unittest.TestCase):
         self.create_directory(self.directory, metadata)
 
         tree_explorer = TreeExplorer(self.directory)
-        self.assertListEqual(
-            sorted(tree_explorer.paths()),
-            sorted(self.sqlite_db_filenames),
-        )
+        with patch('esis.fs.logger'):
+            paths = tree_explorer.paths()
+        self.assertListEqual(sorted(paths), sorted(self.sqlite_db_filenames))
 
     def test_blacklist(self):
         """Blacklisted directories are skipped."""
