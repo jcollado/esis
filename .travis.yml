@@ -16,3 +16,8 @@ script:
 after_success:
   - codecov
   - coveralls
+
+notifications:
+  webhooks:
+    urls:
+      - https://webhooks.gitter.im/e/fba129fb5d9dd058d5bf
