@@ -9,7 +9,8 @@ History
 * First release on PyPI.
 
 
-0.2.0 (2015-05-13)
+0.2.0 (2015-05-??)
 ---------------------
 
 * All documents indexed under the same index name.
+* Docker files allow using the tool in a container.
