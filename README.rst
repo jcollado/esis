@@ -17,7 +17,11 @@ esis
     :target: https://travis-ci.org/jcollado/esis
 
 .. image:: https://coveralls.io/repos/jcollado/esis/badge.svg
-   :target: https://coveralls.io/r/jcollado/esis
+    :target: https://coveralls.io/r/jcollado/esis
+
+.. image:: https://badges.gitter.im/Join%20Chat.svg
+    :alt: Join the chat at https://gitter.im/jcollado/pic2map
+    :target: https://gitter.im/jcollado/pic2map?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
 
 Elasticsearch Index & Search
