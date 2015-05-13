@@ -134,7 +134,8 @@ class ClientTest(unittest.TestCase):
         table_reader.rows.return_value = rows
         table_reader.database.db_filename = db_path
         table_reader.table.name = table_name
-        documents_indexed = self.client._index_table(table_reader)
+        with patch('esis.es.logger'):
+            documents_indexed = self.client._index_table(table_reader)
         indices.put_mapping.assert_called_once_with(
             index=self.client.INDEX_NAME,
             doc_type=hashlib.md5(

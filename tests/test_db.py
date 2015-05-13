@@ -10,7 +10,10 @@ from contextlib import closing
 from datetime import datetime
 from time import time
 
-from mock import MagicMock as Mock
+from mock import (
+    MagicMock as Mock,
+    patch,
+)
 from sqlalchemy import (
     Column,
     select,
@@ -226,16 +229,20 @@ class IntegerDecoratorTest(unittest.TestCase):
 
     def test_other_strings(self):
         """None is returned for other string values."""
-        self.assertIsNone(
-            self.integer_decorator.process_result_value(
-                'other string', self.dialect))
+        with patch('esis.db.logger'):
+            value = self.integer_decorator.process_result_value(
+                'other string', self.dialect)
+
+        self.assertIsNone(value)
 
     def test_other_types(self):
         """None is returned for values of other types."""
         for invalid_value in ((), []):
-            self.assertIsNone(
-                self.integer_decorator.process_result_value(
-                    invalid_value, self.dialect))
+            with patch('esis.db.logger'):
+                value = self.integer_decorator.process_result_value(
+                    invalid_value, self.dialect)
+
+            self.assertIsNone(value)
 
 
 class DatetimeDecoratorTest(unittest.TestCase):
@@ -283,9 +290,12 @@ class DatetimeDecoratorTest(unittest.TestCase):
     def test_invalid_timestamp(self):
         """None is returned if timestamp is out of range."""
         timestamp = 999999999999999999
-        self.assertIsNone(
-            self.datetime_decorator.process_result_value(
-                timestamp, self.dialect))
+
+        with patch('esis.db.logger'):
+            value = self.datetime_decorator.process_result_value(
+                timestamp, self.dialect)
+
+        self.assertIsNone(value)
 
     def test_string(self):
         """Datetime string is reformatted as an ISO string if needed."""
@@ -296,16 +306,20 @@ class DatetimeDecoratorTest(unittest.TestCase):
 
     def test_invalid_string(self):
         """None is returned if string cannot be parsed."""
-        self.assertIsNone(
-            self.datetime_decorator.process_result_value(
-                'this is not a datetime', self.dialect))
+        with patch('esis.db.logger'):
+            value = self.datetime_decorator.process_result_value(
+                'this is not a datetime', self.dialect)
+
+        self.assertIsNone(value)
 
     def test_invalid_type(self):
         """None is returned if value type cannot be parsed."""
         for invalid_value in (True, (), []):
-            self.assertIsNone(
-                self.datetime_decorator.process_result_value(
-                    invalid_value, self.dialect))
+            with patch('esis.db.logger'):
+                value = self.datetime_decorator.process_result_value(
+                    invalid_value, self.dialect)
+
+            self.assertIsNone(value)
 
 
 class TypeCoercionMixinTest(unittest.TestCase):
