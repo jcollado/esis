@@ -70,3 +70,37 @@ Usage
 .. code-block:: bash
 
     esis clean
+
+
+Docker containers
+-----------------
+
+Docker files are included in the source code to run esis and elasticsearch in
+their own containers. To build/pull the images needed to run esis and start the
+elasticsearch server, use the following commands:
+
+.. code-block:: bash
+
+    docker-compose build
+    docker-compose start
+
+After that, to launch esis in a container run:
+
+.. code-block:: bash
+
+    docker-compose run esis <subcommand>
+
+where *<subcommand>* is any of the subcommands in the previous section
+(*index*, *search*, *count* or *clean*).
+
+Note:
+
+* If *docker-compose run* is executed too quickly, then a connection error
+  might be returning meaning that elasticsearch is still initializing.
+
+* The entry point in the esis container uses the *--host* command line option
+  to connect to the linked container where elasticsearch is running.
+
+* The user home directory is mounted in the esis container as */data*. This
+  must be taken into account when passing a directory to the *index* subcommand
+  using a path in the container, not in the host machine.
