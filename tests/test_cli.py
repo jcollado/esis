@@ -65,14 +65,22 @@ class CommandFunctionTests(unittest.TestCase):
     def test_index(self):
         """Index command function."""
         directory = 'some directory'
-        args = argparse.Namespace(directory=directory)
+        args = argparse.Namespace(
+            host='localhost',
+            port=9200,
+            directory=directory,
+        )
         index(args)
         self.client.index.assert_called_once_with(directory)
 
     def test_search(self):
         """Search command function."""
         query = 'some query'
-        args = argparse.Namespace(query=query)
+        args = argparse.Namespace(
+            host='localhost',
+            port=9200,
+            query=query,
+        )
         self.client.search.side_effect = [
             ['result_1', 'result_2'],
             ['result_3', 'result_4'],
@@ -82,13 +90,19 @@ class CommandFunctionTests(unittest.TestCase):
 
     def test_count(self):
         """Count command function."""
-        args = argparse.Namespace()
+        args = argparse.Namespace(
+            host='localhost',
+            port=9200,
+        )
         count(args)
         self.client.count.assert_called_once_with()
 
     def test_clean(self):
         """Clean command function."""
-        args = argparse.Namespace()
+        args = argparse.Namespace(
+            host='localhost',
+            port=9200,
+        )
         clean(args)
         self.client.clean.assert_called_once_with()
 

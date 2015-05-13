@@ -27,7 +27,7 @@ class ClientTest(unittest.TestCase):
         """Patch elasticsearch class and create client object."""
         self.patcher = patch('esis.es.Elasticsearch')
         self.elasticsearch_cls = self.patcher.start()
-        self.client = Client()
+        self.client = Client(host='localhost', port=9200)
 
     def test_index(self):
         """Index directory wrapper."""
