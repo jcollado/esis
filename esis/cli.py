@@ -27,13 +27,13 @@ def main(argv=None):
 
 def index(args):
     """Index database information into elasticsearch."""
-    client = Client()
+    client = Client(args.host, args.port)
     client.index(args.directory)
 
 
 def search(args):
     """Send query to elasticsearch."""
-    client = Client()
+    client = Client(args.host, args.port)
     hit_counter = 0
     for hits in client.search(args.query):
         for hit in hits:
@@ -43,15 +43,15 @@ def search(args):
     print '{} results found'.format(hit_counter)
 
 
-def count(_args):
+def count(args):
     """Print indexed documents information."""
-    client = Client()
+    client = Client(args.host, args.port)
     pprint(client.count())
 
 
-def clean(_args):
+def clean(args):
     """Remove all indexed documents."""
-    client = Client()
+    client = Client(args.host, args.port)
     client.clean()
 
 
@@ -101,13 +101,25 @@ def parse_arguments(argv):
     parser = argparse.ArgumentParser(description=__doc__)
     log_levels = ['debug', 'info', 'warning', 'error', 'critical']
     parser.add_argument(
+        '--host',
+        default='localhost',
+        help='Elasticsearch host (%(default)s by default)',
+    )
+    parser.add_argument(
+        '--port',
+        type=int,
+        default=9200,
+        help='Elasticsearch port (%(default)s by default)',
+    )
+    parser.add_argument(
         '-l', '--log-level',
         dest='log_level',
         choices=log_levels,
         default='warning',
         help=('Log level. One of {0} or {1} '
               '(%(default)s by default)'
-              .format(', '.join(log_levels[:-1]), log_levels[-1])))
+              .format(', '.join(log_levels[:-1]), log_levels[-1])),
+    )
 
     subparsers = parser.add_subparsers(help='Subcommands')
 

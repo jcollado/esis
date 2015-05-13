@@ -46,13 +46,20 @@ logger = logging.getLogger(__name__)
 
 class Client(object):
 
-    """Elasticsearch client wrapper."""
+    """Elasticsearch client wrapper.
+
+    :param host: Elasticsearch host
+    :type host: str
+    :param port: Elasticsearch port
+    :type port: int
+
+    """
 
     INDEX_NAME = 'sqlite'
 
-    def __init__(self):
+    def __init__(self, host, port):
         """Create low level client."""
-        self.es_client = Elasticsearch()
+        self.es_client = Elasticsearch([{'host': host, 'port': port}])
 
     def index(self, directory):
         """Index all the information available in a directory.
