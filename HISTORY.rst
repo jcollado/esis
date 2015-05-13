@@ -9,7 +9,7 @@ History
 * First release on PyPI.
 
 
-0.2.0 (2015-05-??)
+0.2.0 (2015-05-14)
 ---------------------
 
 * All documents indexed under the same index name.
