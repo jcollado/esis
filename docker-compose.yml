@@ -1,0 +1,8 @@
+esis:
+    build: .
+    links:
+        - elasticsearch
+    volumes:
+        - ~:/data
+elasticsearch:
+    image: elasticsearch
