@@ -1,5 +1,5 @@
-SQLAlchemy==1.0.0b1
+SQLAlchemy==1.0.4
 elasticsearch==1.4.0
-python-dateutil==2.4.1
+python-dateutil==2.4.2
 python-magic==0.4.6
-wheel==0.23.0
+wheel==0.24.0
