@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
+"""esis package configuration script."""
 
 try:
     from setuptools import setup
