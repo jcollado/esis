@@ -7,6 +7,12 @@ try:
 except ImportError:
     from distutils.core import setup
 
+from esis import (
+    __author__ as author,
+    __email__ as author_email,
+    __version__ as version,
+)
+
 
 with open('README.rst') as readme_file:
     readme = readme_file.read()
@@ -28,11 +34,11 @@ test_requirements = [
 
 setup(
     name='esis',
-    version='0.2.0',
+    version=version,
     description="Elastic Search Index & Search",
     long_description=readme + '\n\n' + history,
-    author="Javier Collado",
-    author_email='jcollado@nowsecure.com',
+    author=author,
+    author_email=author_email,
     url='https://github.com/jcollado/esis',
     packages=[
         'esis',
