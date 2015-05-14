@@ -9,7 +9,7 @@ import dateutil
 def datetime_to_timestamp(datetime_obj):
     """Return a timestamp for the given datetime object.
 
-      :param datetime_obj: datetime object to be converted
+    :param datetime_obj: datetime object to be converted
     :type datetime_obj: datetime.datetime
     :return: timestamp from the passed datetime object
     :rtype: int
