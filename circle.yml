@@ -4,7 +4,7 @@ dependencies:
 
 test:
     override:
-        - python setup.py test
+        - python setup.py nosetests --with-xunit --xunit-file="$CIRCLE_TEST_REPORTS/nosetests.xml"
 
 notify:
   webhooks:
