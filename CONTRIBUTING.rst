@@ -106,6 +106,7 @@ Before you submit a pull request, check that it meets these guidelines:
 Tips
 ----
 
-To run a subset of tests::
+Use dot notation to run any subset of test cases included in a module, class or
+even by selecting a single test case by its method::
 
-    $ python -m unittest tests.test_esis
+    $ python -m unittest tests.test_es.ClientTest.test_index
