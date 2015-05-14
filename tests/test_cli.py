@@ -61,51 +61,39 @@ class CommandFunctionTests(unittest.TestCase):
         self.patcher = patch('esis.cli.Client')
         client_cls = self.patcher.start()
         self.client = client_cls()
+        self.args = argparse.Namespace(
+            host='localhost',
+            port='9200',
+        )
 
     def test_index(self):
         """Index command function."""
         directory = 'some directory'
-        args = argparse.Namespace(
-            host='localhost',
-            port=9200,
-            directory=directory,
-        )
-        index(args)
+        self.args.directory = directory
+        index(self.args)
         self.client.index.assert_called_once_with(directory)
 
     def test_search(self):
         """Search command function."""
         query = 'some query'
-        args = argparse.Namespace(
-            host='localhost',
-            port=9200,
-            query=query,
-        )
+        self.args.query = query
         self.client.search.side_effect = [
             ['result_1', 'result_2'],
             ['result_3', 'result_4'],
         ]
         with patch('esis.cli.sys.stdout'):
-            search(args)
+            search(self.args)
         self.client.search.assert_called_once_with(query)
 
     def test_count(self):
         """Count command function."""
-        args = argparse.Namespace(
-            host='localhost',
-            port=9200,
-        )
         with patch('esis.cli.sys.stdout'):
-            count(args)
+            count(self.args)
         self.client.count.assert_called_once_with()
 
     def test_clean(self):
         """Clean command function."""
-        args = argparse.Namespace(
-            host='localhost',
-            port=9200,
-        )
-        clean(args)
+        clean(self.args)
         self.client.clean.assert_called_once_with()
 
     def tearDown(self):
