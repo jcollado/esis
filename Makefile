@@ -11,6 +11,7 @@ help:
 	@echo "coverage - check code coverage quickly with the default Python"
 	@echo "docs - generate Sphinx HTML documentation, including API docs"
 	@echo "release - package and upload a release"
+	@echo "test-release - package and upload a release to testpypi"
 	@echo "dist - package"
 	@echo "install - install the package to the active Python's site-packages"
 
@@ -60,6 +61,11 @@ docs:
 release: clean
 	python setup.py sdist upload
 	python setup.py bdist_wheel upload
+
+test-release: clean
+	# pypitest username and password must be defined in a .pypirc file
+	python setup.py sdist upload -r pypitest
+	python setup.py bdist_wheel upload -r pypitest
 
 dist: clean
 	python setup.py sdist
