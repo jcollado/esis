@@ -18,6 +18,14 @@ Contents:
    authors
    history
 
+
+Developer documentation:
+
+.. toctree::
+
+   esis
+
+
 Indices and tables
 ==================
 
