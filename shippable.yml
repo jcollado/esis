@@ -6,4 +6,5 @@ python:
 install: pip install -r requirements.txt -r test_requirements.txt
 
 script:
-    - python setup.py nosetests --with-xunit --xunit-file=shippable/testresults/nosetests.xml
+    - python setup.py nosetests --with-coverage --with-xunit --xunit-file=shippable/testresults/nosetests.xml
+    - coverage xml -o shippable/codecoverage/coverage.xml
