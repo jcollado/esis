@@ -1,5 +1,5 @@
 ===============================
-esis
+Elasticsearch Index & Search
 ===============================
 
 .. image:: https://img.shields.io/pypi/v/esis.svg
