@@ -2,6 +2,10 @@
 Elasticsearch Index & Search
 ===============================
 
+.. image:: https://pypip.in/license/esis/badge.svg
+    :target: https://pypi.python.org/pypi/esis/
+    :alt: License
+
 .. image:: https://img.shields.io/pypi/v/esis.svg
     :target: https://pypi.python.org/pypi/esis
 
