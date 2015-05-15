@@ -6,8 +6,8 @@ Elasticsearch Index & Search
     :target: https://pypi.python.org/pypi/esis
 
 .. image:: https://readthedocs.org/projects/esis/badge/?version=latest
-    :target: https://readthedocs.org/projects/esis/?badge=latest
-    :alt: Documentation Status
+    :target: http://esis.readthedocs.org/en/latest/
+    :alt: Documentation
 
 .. image:: https://requires.io/github/jcollado/esis/requirements.svg?branch=master
     :target: https://requires.io/github/jcollado/esis/requirements/?branch=master
