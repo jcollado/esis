@@ -38,8 +38,6 @@ Elasticsearch Index & Search
 
 Elasticsearch Index & Search
 
-* Free software: MIT license
-* Documentation: https://esis.readthedocs.org.
 
 Features
 --------
