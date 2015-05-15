@@ -6,4 +6,4 @@ python:
 install: pip install -r requirements.txt -r test_requirements.txt
 
 script:
-    - python setup.py --with-xunit --xunit-file=shippable/testresults/nosetests.xml
+    - python setup.py nosetests --with-xunit --xunit-file=shippable/testresults/nosetests.xml
