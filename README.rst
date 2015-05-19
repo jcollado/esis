@@ -45,3 +45,19 @@ Features
 
 * Index content for every SQLite database row in Elasticsearch
 * Search indexed content
+
+Why?
+----
+
+*esis* is based on the code used in a `mobile forensics product
+<https://www.nowsecure.com/forensics/>`_. An important use case of such a
+product is to extract data from a mobile device and provide a way for
+investigators to search relevant information in that data. Since most of that
+data is stored in SQLite databases, it makes sense to figure out a way to
+perform that operation in an efficient way and Elasticsearch has been a good
+solution to that problem so far.
+
+The tool was initially released as a companion to the presentation `how to
+search extracted data
+<http://www.slideshare.net/javier.collado/how-to-search-extracted-data>`_ that
+was given at `DFRWS EU 2015 <http://dfrws.org/2015eu/program.shtml>`_
