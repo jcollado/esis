@@ -22,9 +22,10 @@ with open('HISTORY.rst') as history_file:
 
 requirements = [
     'SQLAlchemy',
+    'elasticsearch',
     'python-dateutil',
     'python-magic',
-    'elasticsearch',
+    'six',
 ]
 
 test_requirements = [
