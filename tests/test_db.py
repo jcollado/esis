@@ -98,7 +98,7 @@ class DatabaseTest(unittest.TestCase):
                 self.assertTrue(database.run_quick_check())
 
     def test_run_quick_check_fails(self):
-        """Quick check fails for non SQLite dtabase files."""
+        """Quick check fails for non SQLite database files."""
         with tempfile.NamedTemporaryFile() as db_file:
             db_file.write('this is a text file, not a database file')
             db_file.flush()
