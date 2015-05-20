@@ -177,12 +177,12 @@ class ClientTest(unittest.TestCase):
     def test_count(self):
         """Return indexed documents."""
         expected_count = {
-            u'_shards': {
-                u'failed': 0,
-                u'successful': 0,
-                u'total': 0,
+            '_shards': {
+                'failed': 0,
+                'successful': 0,
+                'total': 0,
             },
-            u'count': 0,
+            'count': 0,
         }
 
         self.elasticsearch_cls().count.return_value = expected_count

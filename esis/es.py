@@ -5,7 +5,7 @@ import logging
 import os
 import time
 
-from urlparse import urlparse
+from urllib.parse import urlparse
 
 import elasticsearch.helpers
 
@@ -302,7 +302,7 @@ class Mapping(object):
         }
         assert '_metadata' not in table_schema
 
-        for column_name, column_sql_type in table_schema.iteritems():
+        for column_name, column_sql_type in table_schema.items():
             column_mapping = self._get_column_mapping(column_sql_type)
 
             # Skip columns that don't have an mapping defined and let
@@ -357,14 +357,14 @@ def get_document(db_filename, table_name, row):
     )
 
     # Avoid indexing binary data
-    for field_name, field_data in document.items():
+    for field_name, field_data in list(document.items()):
         # Avoid indexing binary data
         if isinstance(field_data, buffer):
             logger.debug('%r field discarded before indexing', field_name)
             del document[field_name]
 
         # Avoid indexing local paths
-        elif isinstance(field_data, basestring):
+        elif isinstance(field_data, str):
             url = urlparse(field_data)
             if (url.scheme == 'file' and
                     os.path.exists(url.path)):

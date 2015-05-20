@@ -36,7 +36,7 @@ class TreeExplorerTest(unittest.TestCase):
         :type metadata: dict(str)
 
         """
-        for basename, value in metadata.iteritems():
+        for basename, value in metadata.items():
             if isinstance(value, str):
                 filename = os.path.join(directory, basename)
                 create_method = getattr(

@@ -86,7 +86,7 @@ class Database(object):
         :rtype: sqlalchemy.schema.Table
 
         """
-        if not isinstance(table_name, basestring):
+        if not isinstance(table_name, str):
             raise TypeError('Unexpected table name: {}'.format(table_name))
         table = self.metadata.tables.get(table_name)
         if table is None:
@@ -240,7 +240,7 @@ class IntegerDecorator(TypeDecorator):
         if value == 'null' or value is None:
             return None
 
-        if isinstance(value, basestring):
+        if isinstance(value, str):
             # Convert strings with only digits to integers
             if value.isdigit():
                 return int(value)
@@ -255,7 +255,7 @@ class IntegerDecorator(TypeDecorator):
                 value = int(datetime_to_timestamp(value_dt))
 
         # Return None by default if value cannot be parsed as integer
-        if not isinstance(value, (int, long)):
+        if not isinstance(value, int):
             logger.warning('Invalid integer value: %s', value)
             return None
 
@@ -283,7 +283,7 @@ class DatetimeDecorator(TypeDecorator):
 
         if isinstance(value, datetime):
             value = value.isoformat()
-        elif isinstance(value, (int, long)) and not isinstance(value, bool):
+        elif isinstance(value, int) and not isinstance(value, bool):
             # Try to parse timestamp in seconds, millisecons and microseconds
             for timestamp in (value, value / 1000, value / 1000000):
                 try:
@@ -292,7 +292,7 @@ class DatetimeDecorator(TypeDecorator):
                     pass
                 else:
                     break
-        elif isinstance(value, basestring):
+        elif isinstance(value, str):
             # Parse datetime string and re-format it as an ISO string
             try:
                 value = dateutil.parser.parse(value).isoformat()
@@ -344,7 +344,7 @@ class TypeCoercionMixin(object):
         :rtype: sqlalchemy.sql.elements.Label | sqlalchemy.sql.schema.Column
 
         """
-        for from_type, to_type in self.COERCIONS.iteritems():
+        for from_type, to_type in self.COERCIONS.items():
             if isinstance(column.type, from_type):
                 # Preserve column name despite of the type coercion
                 return type_coerce(column, to_type).label(column.name)

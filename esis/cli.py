@@ -38,9 +38,9 @@ def search(args):
     for hits in client.search(args.query):
         for hit in hits:
             hit_counter += 1
-            print '{}: {}\n'.format(hit_counter, pformat(hit))
+            print('{}: {}\n'.format(hit_counter, pformat(hit)))
 
-    print '{} results found'.format(hit_counter)
+    print('{} results found'.format(hit_counter))
 
 
 def count(args):
