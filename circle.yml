@@ -2,10 +2,6 @@ dependencies:
     override:
         - pip install -r requirements.txt -r test_requirements.txt
 
-test:
-    override:
-        - python setup.py nosetests --with-xunit --xunit-file="$CIRCLE_TEST_REPORTS/nosetests.xml"
-
 notify:
   webhooks:
     - url: https://webhooks.gitter.im/e/20ab68155f1fd622b1e1
