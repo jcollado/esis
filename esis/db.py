@@ -288,7 +288,7 @@ class DatetimeDecorator(TypeDecorator):
             for timestamp in (value, value / 1000, value / 1000000):
                 try:
                     value = datetime.utcfromtimestamp(timestamp).isoformat()
-                except ValueError:
+                except (OSError, ValueError):
                     pass
                 else:
                     break

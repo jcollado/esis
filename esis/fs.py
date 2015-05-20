@@ -100,7 +100,7 @@ class TreeExplorer(object):
                     logger.warning('Unable to access file: %r', db_path)
                     continue
 
-                if 'SQLite' in magic.from_file(db_path):
+                if b'SQLite' in magic.from_file(db_path):
                     db_paths.append(db_path)
 
         return db_paths

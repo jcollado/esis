@@ -110,7 +110,7 @@ class ClientTest(unittest.TestCase):
         indices.put_mapping.assert_called_once_with(
             index=self.client.INDEX_NAME,
             doc_type=hashlib.md5(
-                '{}:{}'.format(db_path, table_name)).hexdigest(),
+                '{}:{}'.format(db_path, table_name).encode('utf-8')).hexdigest(),
             body=mapping.mapping)
         self.assertEqual(documents_indexed, len(rows))
 
@@ -139,7 +139,7 @@ class ClientTest(unittest.TestCase):
         indices.put_mapping.assert_called_once_with(
             index=self.client.INDEX_NAME,
             doc_type=hashlib.md5(
-                '{}:{}'.format(db_path, table_name)).hexdigest(),
+                '{}:{}'.format(db_path, table_name).encode('utf-8')).hexdigest(),
             body=mapping.mapping)
         self.assertEqual(
             documents_indexed,
@@ -287,7 +287,7 @@ class GetDocumentTest(unittest.TestCase):
         table_name = 'table'
         row = {
             'text': 'some message',
-            'data': buffer('a'),
+            'data': b'a',
         }
         document = get_document(db_filename, table_name, row)
         self.assertDictEqual(

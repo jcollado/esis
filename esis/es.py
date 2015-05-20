@@ -150,7 +150,7 @@ class Client(object):
         db_path = table_reader.database.db_filename
         table_name = table_reader.table.name
         document_type = hashlib.md5(
-            '{}:{}'.format(db_path, table_name)
+            '{}:{}'.format(db_path, table_name).encode('utf-8')
         ).hexdigest()
 
         # Translate database schema into an elasticsearch mapping
@@ -359,7 +359,7 @@ def get_document(db_filename, table_name, row):
     # Avoid indexing binary data
     for field_name, field_data in list(document.items()):
         # Avoid indexing binary data
-        if isinstance(field_data, buffer):
+        if isinstance(field_data, bytes):
             logger.debug('%r field discarded before indexing', field_name)
             del document[field_name]
 
