@@ -5,6 +5,8 @@ import hashlib
 import tempfile
 import unittest
 
+import six
+
 from mock import (
     MagicMock as Mock,
     patch,
@@ -287,8 +289,13 @@ class GetDocumentTest(unittest.TestCase):
         table_name = 'table'
         row = {
             'text': 'some message',
-            'data': memoryview(b'a'),
         }
+
+        if six.PY2:
+            row['data'] = buffer(b'a')
+        elif six.PY3:
+            row['data'] = b'a'
+
         document = get_document(db_filename, table_name, row)
         self.assertDictEqual(
             document,

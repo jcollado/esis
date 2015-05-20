@@ -360,7 +360,8 @@ def get_document(db_filename, table_name, row):
     # Avoid indexing binary data
     for field_name, field_data in list(document.items()):
         # Avoid indexing binary data
-        if isinstance(field_data, memoryview):
+        if ((six.PY2 and isinstance(field_data, buffer)) or
+                (six.PY3 and isinstance(field_data, bytes))):
             logger.debug('%r field discarded before indexing', field_name)
             del document[field_name]
 
