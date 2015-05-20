@@ -5,11 +5,12 @@ import logging
 import os
 import time
 
-from urllib.parse import urlparse
-
 import elasticsearch.helpers
 
 from elasticsearch import Elasticsearch
+
+import six
+from six.moves.urllib.parse import urlparse
 
 from sqlalchemy.types import (
     BIGINT,
@@ -359,7 +360,7 @@ def get_document(db_filename, table_name, row):
     # Avoid indexing binary data
     for field_name, field_data in list(document.items()):
         # Avoid indexing binary data
-        if isinstance(field_data, bytes):
+        if isinstance(field_data, memoryview):
             logger.debug('%r field discarded before indexing', field_name)
             del document[field_name]
 

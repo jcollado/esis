@@ -6,6 +6,8 @@ from datetime import datetime
 
 import dateutil.parser
 
+import six
+
 from sqlalchemy import (
     Column,
     MetaData,
@@ -86,7 +88,7 @@ class Database(object):
         :rtype: sqlalchemy.schema.Table
 
         """
-        if not isinstance(table_name, str):
+        if not isinstance(table_name, six.string_types):
             raise TypeError('Unexpected table name: {}'.format(table_name))
         table = self.metadata.tables.get(table_name)
         if table is None:

@@ -287,7 +287,7 @@ class GetDocumentTest(unittest.TestCase):
         table_name = 'table'
         row = {
             'text': 'some message',
-            'data': b'a',
+            'data': memoryview(b'a'),
         }
         document = get_document(db_filename, table_name, row)
         self.assertDictEqual(
