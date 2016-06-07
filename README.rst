@@ -35,6 +35,10 @@ Elasticsearch Index & Search
     :alt: Join the chat at https://gitter.im/jcollado/esis
     :target: https://gitter.im/jcollado/esis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
 
+.. image:: http://unmaintained.tech/badge.svg
+    :alt: No Maintenance Intended
+    :target: http://unmaintained.tech/
+
 
 Elasticsearch Index & Search, *esis* for short, is a tool to easily search for
 information in the files available under a given directory in the filesystem.
