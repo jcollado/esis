@@ -2,7 +2,7 @@
 Elasticsearch Index & Search
 ===============================
 
-.. image:: https://pypip.in/license/esis/badge.svg
+.. image:: https://img.shields.io/pypi/l/esis.svg
     :target: https://pypi.python.org/pypi/esis/
     :alt: License
 
