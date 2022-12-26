@@ -2,4 +2,4 @@ SQLAlchemy==1.0.8
 elasticsearch==1.8.0
 python-dateutil==2.4.2
 python-magic==0.4.6
-wheel==0.26.0
+wheel==0.38.1
